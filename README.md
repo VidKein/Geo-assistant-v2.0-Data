@@ -62,23 +62,26 @@ Displays a calendar with measurement plans (total station/leveling). When initia
 ![Seting](./icons/readme/Menu%203.jpg)
 ### Settings:
   1. General settings:
-    * Site display language
-    * Choose whether to display the point number or not
-    * Reset all general settings
+     * Site display language
+     * Choose whether to display the point number or not
+     * Reset all general settings
   2. Import work calendar
 
   RULES FOR COMPLETING THE WORK PLAN TABLE:
   - COLUMN A - fill in any
   - COLUMN B - point number (filling options number 141801 or extenso EXT-306(480901), EXT-336(550401))
   - COLUMN C - type of work (filling options with a letter (type of work n-level survey, t-tacheometric survey))
-  3. Working with points:
-    * Adding
-    * Editing
-    * Deleting
-  4. Point type codes/coordinate system:
-    * Adding
-    * Deleting
-  5. Importing points as a list
+  3. Name of the work location:
+     * Add
+     * Delete
+  4. Working with points:
+     * Adding
+     * Editing
+     * Deleting
+  5. Point type codes/coordinate system:
+     * Adding
+     * Deleting
+  6. Importing points as a list
 
   Importing a list of points using .csv, .txt format files. 
 
@@ -90,7 +93,12 @@ Displays a calendar with measurement plans (total station/leveling). When initia
       1;     741976.7448;1047497.7509;268.1013;25-05-25;         1;           12
   
   ```
-  6. Log out  
+  
+  7. Exmporting points as a list
+
+  Exporting a list of points in .csv, .txt format. 
+
+  8. Log out  
 ### Symbols:
   - POINTS:
     * Basic:
@@ -168,23 +176,26 @@ Zobrazí se kalendář s plány měření (totální stanice/nivelace). Při prv
 ![Seting](./icons/readme/Menu%203.jpg)
 ### Nastavení:
   1. Obecná nastavení:
-    * Jazyk zobrazení webu
-    * Výběr, zda se má zobrazovat číslo bodu
-    * Obnovení všech obecných nastavení
+     * Jazyk zobrazení webu
+     * Výběr, zda se má zobrazovat číslo bodu
+     * Obnovení všech obecných nastavení
   2. Import pracovního kalendáře
   
   PRAVIDLA PRO VYPLNĚNÍ TABULKY PRACOVNÍHO PLÁNU:
   - SLOUPEC A - vyplňte libovolné
   - SLOUPEC B - číslo bodu (možnosti vyplnění číslo 141801 nebo extenso EXT-306(480901), EXT-336(550401))
   - SLOUPEC C - druh práce (možnosti vyplnění písmenem (druh práce n-úrovňové zaměření, t-tachyometrické zaměření))
-  3. Práce s body:
-    * Přidávání
-    * Úpravy
-    * Mazání
-  4. Kódy typů bodů/souřadnicový systém:
-    * Přidávání
-    * Mazání
-  5. Import bodů jako seznamu
+  3. Název pracoviště:
+     * Přidávání
+     * Mazání
+  4. Práce s body:
+     * Přidávání
+     * Úpravy
+     * Mazání
+  5. Kódy typů bodů/souřadnicový systém:
+     * Přidávání
+     * Mazání
+  6. Import bodů jako seznamu
 
   Import seznamu bodů pomocí souborů .csv, .txt. 
 
@@ -196,7 +207,11 @@ Zobrazí se kalendář s plány měření (totální stanice/nivelace). Při prv
       1;     741976.7448;1047497.7509;268.1013;25-05-25;         1;           12
   
   ```
-  6. Odhlaste se   
+  7. Export bodů jako seznamu
+
+  Export seznamu bodů ve formátu .csv, .txt.
+
+  8. Odhlaste se   
 ### Symboly:
 - BODY:
   * Základní:
@@ -282,14 +297,17 @@ Po kliknutí se otevře stránka s nápovědou pro práci s programem (v závisl
   - СТОВПЕЦ А - заповнення будь-яке
   - СТОВПЕЦ Б - номер точки (варіанти заповнення число 141801 або екстензо EXT-306(480901), EXT-336(550401))
   - СТОВПЕЦ В - тип робіт (варіанти заповнення літерою (тип робіт n-нівелірна зйомка, t-тахеометрична зйомка))
-  3. Робота з точками:
+  3. Назва місця розташування робіт:
+      * Додавання
+      * Видалення
+  4. Робота з точками:
       * Додавання
       * Редагування
       * Видалення
-  4. Коди типів точок/системи координат:
+  5. Коди типів точок/системи координат:
       * Додавання
       * Видалення
-  5. Імпорт точок у вигляді списку
+  6. Імпорт точок у вигляді списку
   
   Імпортування списку точок за допомогою файлів формату .csv, .txt. 
   
@@ -301,7 +319,11 @@ Po kliknutí se otevře stránka s nápovědou pro práci s programem (v závisl
       1;     741976.7448;1047497.7509;268.1013;25-05-25;         1;           12
   
   ```
-  6. Вийти із реєстрації    
+  7. Експорт точок у вигляді списку.
+
+  Експортування списку точок в формату .csv, .txt. 
+
+  8. Вийти із реєстрації    
 ### Умовні позначення:
    - ТОЧКИ:
       * Базові:
