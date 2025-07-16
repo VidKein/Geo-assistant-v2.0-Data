@@ -1,0 +1,14 @@
+/* Кастомизация tooltip */
+.leaflet-tooltip {
+    background: none; /* Убираем белое поле */
+    border: none; /* Убираем рамку */
+    box-shadow: none; /* Убираем тень */
+    color: black; /* Цвет текста */
+    font-size: 12px; /* Размер шрифта */
+    font-weight: bold; /* Жирный текст */
+    padding: 0; /* Убираем отступы */
+}
+/* Убираем стрелку (псевдоэлемент) */
+.leaflet-tooltip.no-arrow::before {
+    content: none;
+}

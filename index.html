@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title langs = "titleHtml">Geo assistant</title>
+    <link rel="shortcut icon" href="./icons/geodetic.png"><!--моя иконка-->
+    <link rel="stylesheet" href="./css/authentication/authentication.css"><!--CSS entrance-->
+</head>
+<body>
+    <!--Entrance-->
+    <div class = "entrance">
+        <div class = "entrance-bar">
+            <img class = "screensaver" src="./icons/geo assistent.png" alt="Geo assistent">
+            <h2 langs = "textGeo" class="textGeo">Geo assistent</h2>
+            <h3 langs = "textEnter">Enter your login details</h3>
+            <div id="entranceInfo">
+                <p langs = "textSubmitEmail" class="textSubmit">E-mail:</p>
+                <input type="text" id="email" placeholder="email" required>
+                <p langs = "textSubmitPass" class="textSubmit">Password:</p>
+                <input type="text" id="pass" placeholder="password" required>
+                <p class="submit-bar">
+                    <input data-lang-key="rememberme" langs-atr="title" type="checkbox" name="rememberme" id="rememberme" title="Remember me">
+                    <label langs = "textCheckbox" for="rememberme" class="textCheckbox">Remember me</label>
+                    <button langs = "load" data-lang-key="textLoad" langs-atr="title" type="submit" id="buttonSubmit" title="Send information" onclick="login()">Login</button>
+                </p>
+            </div>
+        </div>
+    </div>
+    <script src="./script/authentication/authentication.js"></script><!--Entrance-->
+    <script src="./script/SiteLanguage/site-language.js"></script><!--Site Language-->
+</body>
+</html>

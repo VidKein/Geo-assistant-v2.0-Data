@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title langs = "titleHtml">Geo assistant</title>
+    <link rel="shortcut icon" href="./icons/geodetic.png"><!--my icon-->
+    <link rel="stylesheet" href="./API/leaflet/leaflet.css" /><!--leaflet-->
+    <link rel="stylesheet" href="./css/style.css"><!--CSS main-->
+    <link rel="stylesheet" href="./css/marker.css"><!--CSS marker namber-->
+    <link rel="stylesheet" href="./css/calendarg.css"><!--CSS calendarg-->
+    <link rel="stylesheet" href="./css/scale-bar.css"><!--CSS scale-bar-->
+    <link rel="stylesheet" href="./API/locate/L.Control.Locate.min.css" /><!--L.Control-->
+    <script src="./API/leaflet/leaflet-src.js"></script><!--leaflet-->
+    <script src="./API/JTSKtoWGS84/Converter.js"></script><!--сonverter-->
+    <script src="./script/modules/scale-bar.js"></script><!--scale ruler-->
+    <script>      
+        const user = sessionStorage.getItem('email') || localStorage.getItem('isLoggedIn');
+        if (!user) {
+          window.location.href = 'index.html';
+        }
+    </script>
+</head>
+<body>
+    <!--Load-->
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+        <div id="progress-text">Load...</div>
+    </div>
+    <!--Карта-->
+    <div id="map"></div>
+    <div class="fullEdit">
+            <!--Дата/Информация по работе-->
+            <div data-lang-key="dataBlock" langs-atr="title"  id="dataBlock" class="dataBlock" title="Information by date">
+                <div class="data"><span class="todayDate"></span><span class="dataIkom"></span></div>
+            </div>
+            <!--Информация о точках-->
+            <div id="infoPointkBlock" class="infoPointkBlock">
+                <div class="points-wrapper">
+                    <button data-lang-key = "Exit the infoblock" langs-atr="title" class="close-points" title="Exit the infoblock">X</button>
+                    <!--Базовые точки-нивелирование-->
+                    <button langs-child = "levelingBasic" tegs-child="0" type="button" class="accordion" name="levelingBasic">Basic leveling points - <span id="levelingBasicLength">0</span></button>
+                    <div class="links" id="levelingBasic" name="point">
+                    </div>
+                    <!--Базовые точки--тахеометрия-->
+                    <button langs-child = "tacheometryBasic" tegs-child="0" type="button" class="accordion" name="tacheometryBasic">Base points of tacheometry - <span id="tacheometryBasicLength">0</span></button>
+                    <div class="links" id="tacheometryBasic" name="point">
+                    </div>
+                    <!--Рабочии точки-нивелирование-->
+                    <button langs-child = "levelingJobs" tegs-child="0" type="button" class="accordion" name="levelingJobs">Operating leveling points - <span id="levelingJobsLength">0</span></button>
+                    <div class="links" id="levelingJobs" name="point">
+                    </div>
+                    <!--Рабочии точки-тахеометрии-->
+                    <button langs-child = "tacheometryJobs" tegs-child="0" type="button" class="accordion" name="tacheometryJobs">Operating points of tacheometry - <span id="tacheometryJobsLength">0</span></button>
+                    <div class="links" id="tacheometryJobs" name="point">
+                    </div>
+                </div>
+            </div>
+            <!--Импорт точки-->
+            <div id="import" class="import">
+                <div class="import-wraper">
+                    <button data-lang-key="close-import" langs-atr="title" class="close-import" title="Exit Imports">X</button>
+                    <div class="importBlock">
+                        <div class="typeAndJobsPoint"></div>
+                        <div class="plasePoint"></div>        
+                        <span class="namePoint" style="color: red; font-weight: 600;"></span>    
+                        <div id="importInfo">
+                            <p langs-child = "position" tegs-child="0">position: <input type="text" id="position X" value=700000 required> x <input type="text" id="position Y" value=1000000 required><span data-lang-key="determinationСoordinates" langs-atr="title" class="determinationСoordinates" title="Determination coordinates"></span></p>
+                            <p langs-child = "vycka" tegs-child="0">vycka: <input type="number" id="vycka" value=100.0000 required></p>
+                            <p langs-child = "date" tegs-child="0">date: <input type="date" id="date" required></p>
+                            <p langs-child = "coordinate system" tegs-child="0">coordinate system: 
+                            <select id="coordinateSystem">
+                              <option langs-child = "Select" tegs-child="0" value="">Select</option>
+                            </select>
+                            </p>
+                            <p langs-child = "position type" tegs-child="0">position type: 
+                            <select id="positionType">
+                              <option langs-child = "Select" tegs-child="0" value="">Select</option>
+                            </select>
+                            </p>
+                        </div> 
+                        <input id="funktionalAdd" type="button" value="OK">
+                        <input id="funktionalEdit" type="button" value="OK">
+                    </div>
+                </div>
+            </div>
+            <!--Календарь - кнопка календаря подключена main.js через leaflet-->
+            <div id="calendargBlock" class="calendargBlock">
+                <div class="calendar-wrapper">
+                    <button id="btnPrev" type="button"><span class="prev"></span></button>
+                    <div id="montYers">February 2025</div>
+                    <button id="btnNext" type="button"><span class="next"></span></button>
+                    <button data-lang-key="close-calendarg" langs-atr="title" class="close-calendarg" title="Exit kalendář">X</button>
+                    <div id="divCal"></div>
+                </div>
+            </div>
+            <!--Настройки - кнопка настройки подключена main.js через leaflet-->
+            <div id="settingBlock" class="settingBlock">
+                <div class="setting-wrapper">
+                    <!--Шапка-->
+                    <div class="settingCap">
+                    <div>
+                        <h3 langs = "SettingH2" >Setting:</h3>
+                    </div>
+                    <button data-lang-key="close-setting" langs-atr="title" class="close-setting" title="Exit Settings">X</button>
+                    </div>
+                    <!--Функционал-->
+                    <div class="settingFunctional">
+                        <div class="leftSettingFunctional">
+                            <button langs = "General"  data-lang-key="General" langs-atr="title"  type="button" class="settingButton" id="General" title="General" style="background-color: rgb(195, 196, 199);">General</button>
+                            <button langs = "Сalendar" data-lang-key="Сalendar" langs-atr="title"  type="button" class="settingButton" id="Сalendar" title="Сalendar">Сalendar</button>
+                            <button langs = "Plots" data-lang-key="Plots" langs-atr="title"  type="button" class="settingButton" id="Plots" title="Plots">Plots</button>
+                            <button langs = "Points" data-lang-key="Points" langs-atr="title"  type="button" class="settingButton" id="Points" title="Points">Points</button>
+                            <button langs = "Codes" data-lang-key="Codes" langs-atr="title"  type="button" class="settingButton" id="Codes" title="Codes">Codes</button>
+                            <button langs = "Import" data-lang-key="Import" langs-atr="title"  type="button" class="settingButton" id="Import" title="Import">Import</button>
+                            <button langs = "Export" data-lang-key="Export" langs-atr="title"  type="button" class="settingButton" id="Export" title="Export">Export</button>
+                            <button langs = "Sign" data-lang-key="Sign" langs-atr="title"  type="button" class="settingButton" id="Sign" title="Sign up">Sign up</button>
+                        </div>
+                        <div class="rightSettingFunctional">
+                            <div class="links" id="General" style="display: block;">
+                                <p langs = "Language" style="display: inline; text-align: left;" >Language:</p>
+                                    <select name="lang" id="lang">
+                                    <option langs = "option_1" value="">Select</option>
+                                    <option langs = "option_2" value="eng">English</option>
+                                    <option langs = "option_3" value="ua">Ukrainian</option>
+                                    <option langs = "option_4" value="cz">Czech</option>
+                                    </select>
+                                    <button langs = "Сhange" data-lang-key="Сhangelang" langs-atr="title" type="button" id="runLangAplikac" title="Сhange language">Сhange</button>
+                                <hr>
+                                <p langs = "point number" style="text-align: left; display: inline;">Display point number - </p><input type="checkbox" id="nameDisplay">
+                                <hr>
+                                <p langs = "Reset" style="text-align: left; display: inline;">Reset all saved settings.</p><button langs = "clearSettings" data-lang-key="Reset settings" langs-atr="title"  type="submit" id="clearSettings" title="Reset all saved settings">Reset</button></p>
+                                
+                            </div>
+                            <div class="links" id="Сalendar" style="display: none;">
+                                <p langs = "file" style="text-align: left;">Please specify the file with the work plan.</p>
+                                <label langs = "SelectFile" data-lang-key="SelectFile" langs-atr="title" for="fileInput" class="custom-file-upload" title="Select fale">Select fale</label>
+                                <input type="file" id="fileInput" hidden>
+                                <span langs = "fileName" id="fileName">file not loaded</span>
+                                <button langs = "runCalendAplikac" data-lang-key="runCalendAplikac" langs-atr="title" id="runCalendAplikac" title="Submit fail" disabled>Submit fail</button>
+                                <p id="status"></p>
+                            </div>
+                            <div class="links" id="Plots" style="display: none;">
+                                <div class="plots-wrapper">
+                                    <!--Базовые  точки-->
+                                    <button langs-child = "Base" tegs-child="0" type="button" class="accordion" name="LevelBase">Base<span id="levelingBase">0</span></button>
+                                    <div class="links" id="LevelBase" name="plots"></div>
+                                    <!--Рабочие точки-->
+                                    <button langs-child = "Poligons" tegs-child="0" type="button" class="accordion" name="LevelPoligons">Poligons<span id="levelingpoligons">0</span></button>
+                                    <div class="links" id="Levelpoligons" name="plots"></div>
+                                </div>    
+                            </div>
+                            <div class="links" id="Points" style="display: none;">
+                                <p langs = "SelectType" style="display: block; text-align: left;">Type, job/plase, name point:</p>
+                                    <div class="runTypeAndJobsPoint"></div>
+                                    <div class="runPlasePoint"></div> 
+                                    <input type="namber" id="namePointAddEditDelat">
+                                <button langs = "Add point" data-lang-key="Add point" langs-atr="title" type="submit" id="runPointAdd" title="Add point">Add point</button>
+                                <button langs = "Edit point" data-lang-key="SEdit point" langs-atr="title" type="submit" id="runPointEdit" title="Edit point">Edit point</button>
+                                <button langs = "Delaet point" data-lang-key="Delaet point" langs-atr="title" type="submit" id="runPointDelat" title="Delaet point">Delaet point</button>
+                            </div>
+                            <div class="links" id="Codes" style="display: none;">
+                                <div class="codes-wrapper">
+                                    <!--Система коорднат-->
+                                    <button langs-child = "Сoordinate system" tegs-child="0" type="button" class="accordion" name="LevelcoordinateSystem">Сoordinate system<span id="levelingcoordinateSystem">0</span></button>
+                                    <div class="links" id="LevelcoordinateSystem" name="codes"></div>
+                                    <!--Типы расположения точек-->
+                                    <button langs-child = "Position type" tegs-child="0" type="button" class="accordion" name="LevelpositionType">Position type<span id="levelingpositionType">0</span></button>
+                                    <div class="links" id="LevelpositionType" name="codes"></div>
+                                </div>    
+                            </div>
+                            <div class="links" id="Import" style="display: none;">
+                                <p langs = "file_points" style="text-align: left;">Select a file to import</p>
+                                <label langs = "SelectFile" data-lang-key="SelectFile" langs-atr="title" for="fileInputList" class="custom-file-upload" title="Select fale">Select fale</label>
+                                <input type="file" id="fileInputList" hidden>
+                                <span langs = "fileName" id="fileNameImport">file not loaded</span>
+                                <p langs = "SelectTypeInput" style="display: block; text-align: left;">Type, job/plase, name point:</p>
+                                <div class="runTypeAndJobsPointImport"></div>
+                                <div class="runPlasePointImport"></div>
+                                <p id="statusImport"></p> 
+                                <button langs = "runImportAplikac" data-lang-key="runImportAplikac" langs-atr="title" id="runImportAplikac" title="Submit fail" disabled>Send information</button>
+                            </div>
+                            <div class="links" id="Export" style="display: none;">
+                                <p langs = "SelectTypeExport" style="display: block; text-align: left;">Select, job/place type and file format:</p>
+                                <div class="runTypeAndJobsPointExport"></div>
+                                <div class="runPlasePointExport"></div>
+                                <div class="runTapeFailExport">
+                                    <select id="tapeFailExport">
+                                        <option value=".csv">.csv</option>
+                                        <option value=".txt">.txt</option>
+                                    </select>
+                                </div>
+                                <button langs = "runExportAplikac" data-lang-key="runExportAplikac" langs-atr="title" id="runExportAplikac" title="Submit fail" >Send information</button>
+                                <p id="statusExport"></p> 
+                            </div>
+                            <div class="links" id="Sign" style="display: none;">
+                                <p langs = "SelectTypeLogout" style="text-align: left; display: inline;">Logout of registration.</p><button langs = "runImportLogout" data-lang-key="runImportLogout" langs-atr="title" type="submit" id="logout" title="Logout">Logout</button></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            <!--Информационное окно которое используется для: Удаления,Нового кода точeк, Удаление кода точeк-->
+            <div id="infoWindows" class="infoWindows">
+                <div class="infoWindows-wraper">
+                    <button data-lang-key="close-infoWindows" langs-atr="title" class="close-infoWindows" title="Exit button">X</button>
+                    <div class="textWindows"></div>
+                    <!--Кнопка активации удаления точки-->
+                    <input id="funktionalDelat" type="button" value="OK" style="display: none;">
+                    <!--Кнопка активации добавления/удаления нового кода-->
+                    <input id="funktionalNewCod" type="button" value="OK" style="display: none;">
+                    <input id="funktionalDelatCod" type="button" value="OK" style="display: none;">
+                    <!--Кнопка активации добавления/удаления нового места расположения участка-->
+                    <input id="funktionalNewPlots" type="button" value="OK" style="display: none;">
+                    <input id="funktionalDelatPlots" type="button" value="OK" style="display: none;">
+                </div>
+            </div>       
+        
+    </div>
+    <!--Условные обозначения - кнопка условных обозначений подключена main.js через leaflet-->
+    <!--Обозначения-->
+    <div class="designations">
+        <div class="contextualColumns">
+            <p langs = "designations" >Designations maps:</p>
+            <p langs-child = "p_1" tegs-child="1"><img class="point" src="./icons/main-niv.png" alt="base points leveling"> - base points leveling;</p>
+            <p langs-child = "p_2" tegs-child="1"><img class="point" src="./icons/main-trig.png" alt="base points tacheometry"> - base points tacheometry;</p>
+            <p langs-child = "p_3" tegs-child="1"><img class="point" src="./icons/jobs-niv.png" alt="operating points leveling"> - operating points leveling;</p>
+            <p langs-child = "p_4" tegs-child="1"><img class="point" src="./icons/jobs-trig.png" alt="operating points tacheometry"> - operating points tacheometry;</p>
+            <p langs-child = "p_5" tegs-child="1"><img class="point" src="./icons/check_red.png" alt="operating points tacheometry"> - point usage designation.</p>
+        </div>
+    </div>
+    <!--Определение координат-->
+    <!-- Крест и точка в центре экрана -->
+    <div class="markerDeterminationСoordinates">
+        <div class="crosshair"></div>
+        <div class="dot"></div>
+        <div class="markerLabel">
+            <button data-lang-key="closeMarkerLabel" langs-atr="title" class="closeMarkerLabel" title="Exit determination coordinates" style="border: 1px solid black;">X</button>
+            <!-- Заполняем список координат -->
+            <select id="coordSystem"></select>
+            <button data-lang-key="getCoordinates" langs-atr="title" id="getCoordinates" title="Getc oordinates">ОK</button>
+        </div>
+    </div>
+    <script>
+    </script>
+    <script src="./API/locate/L.Control.Locate.min.js"></script><!--L.Control-->
+    <script src="./API/xlsx-import/xlsx.full.min.js"></script><!--xlsx-import-->
+    <script src="./script/modules/calendarg.js"></script><!--calendarg-->
+    <script type="module" src="./script/modules/planning-work.js"></script><!--planning-work-->
+    <script type="module" src="./script/modules/info-point.js"></script><!--info-point-->
+    <script type="module" src="./script/modules/setting.js"></script><!--setting-->
+    <script type="module" src="./script/modules/working-with-files/add.js"></script><!--working-with-files+ADD-->
+    <script type="module" src="./script/modules/working-with-files/delat.js"></script><!--working-with-files+DELAT-->
+    <script type="module" src="./script/modules/working-with-files/edit.js"></script><!--working-with-files+EDIT-->
+    <script type="module" src="./script/modules/working-with-files/codDelat.js"></script><!--working-with-files+CodDelat-->
+    <script type="module" src="./script/modules/working-with-files/codNew.js"></script><!--working-with-files+newCod-->
+    <script type="module" src="./script/modules/working-with-files/plotDelat.js"></script><!--working-with-files+delatePlot-->
+    <script type="module" src="./script/modules/working-with-files/plotNew.js"></script><!--working-with-files+newPlot-->
+    <script type="module" src="./script/modules/working-with-files/loadFiles.js"></script><!--working-with-files+LoadFiles-->
+    <script type="module" src="./script/modules/working-with-files/import.js"></script><!--working-with-files+Import lisp point-->
+    <script type="module" src="./script/modules/working-with-files/export.js"></script><!--working-with-files+Export lisp point-->
+    <script type="module" src="./script/main.js"></script><!--MAIN-->
+    <script src="./script/SiteLanguage/site-language.js"></script><!--Site Language-->
+</body>
+</html>

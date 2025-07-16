@@ -1,0 +1,22 @@
+/*Масштабная линейка*/
+.leaflet-control-scaleBar-map{
+    border: 0 solid rgba(255, 255, 255, 0);
+  }
+  .scale-bar-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 5px;
+  }
+  .scale-bar {
+  display: inline-block;
+  height: 4px;
+  border: 3px solid #202124;
+  border-top: none;
+  }
+  .scale-text {
+  font-weight: bold;
+  color: #fff;
+  font-size: 12px;
+  text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+  }
