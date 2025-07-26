@@ -105,7 +105,7 @@ showLoader();
             acc[key] = Object.keys(jsonData[key]); // Берём только ключи второго уровня
             return acc;
         }, {});
-
+        
         //Для контроля
         //console.log('JSON данные Базовые:', jsonData.Base, 'JSON данные Рабочие:', jsonData.poligons);
         
@@ -172,7 +172,7 @@ showLoader();
             const hasOne = colData.some(value => value === 1);
  
             //Для контроля
-            console.log(hasOne);
+            //console.log(hasOne);
             
             console.log(`Количество найденных точек на листе "${sheetName}":`, colData[0]);
             //Передаем информацию о количестве рабочих точек в календарь  calendarg.js
@@ -211,12 +211,13 @@ showLoader();
                             positionType: positionTypemMap[parseInt(positionTypeInfo, 10)]}
                         }
                     //Для контроля
-                   //console.log(columnData);
-                    if (sheetName == "Base") {
+                   //sconsole.log(columnData);
+                    if (sheetName == "Base") {                                
                         //Base
+                        for (let key in typeJobs.Base) {
                         columnData.forEach(row => {  
                             if (row.C == 'n') {    
-                                if (jsonData.Base.niv[row.B] !== undefined) {
+                                if (jsonData.Base[typeJobs.Base[key]][row.B] !== undefined) {
                                     addPlace(resultsTipJobsNivBase, sheetName, row.B, jsonData.Base.niv[row.B].position, jsonData.Base.niv[row.B].vycka, jsonData.Base.niv[row.B].date, jsonData.Base.niv[row.B].systemCoordinates, jsonData.Base.niv[row.B].positionType);
                                     //Для контроля
                                     resultsTip.nivBase.push(`place: ${sheetName} , namber: ${row.B} , position: ${jsonData.Base.niv[row.B].position} , ${jsonData.Base.niv[row.B].position[1]}, vycka: ${jsonData.Base.niv[row.B].vycka}, date: ${jsonData.Base.niv[row.B].date}, systemCoordinates: ${coordinateSystemMap[parseInt(jsonData.Base.niv[row.B].systemCoordinates, 10)]}, positionType: ${positionTypemMap[parseInt(jsonData.Base.niv[row.B].positionType, 10)]}`);
@@ -227,7 +228,7 @@ showLoader();
                                     resultsTip.nivBase.push(`place: ${sheetName} , namber: ${row.B} , data not found in database`);
                                 }
                             } else {
-                                if (jsonData.Base.trig[row.B] !== undefined) {
+                                if (jsonData.Base[typeJobs.Base[key]][row.B] !== undefined) {
                                     addPlace(resultsTipJobsTrigBase, sheetName, row.B, jsonData.Base.trig[row.B].position, jsonData.Base.trig[row.B].vycka, jsonData.Base.trig[row.B].date, jsonData.Base.trig[row.B].systemCoordinates, jsonData.Base.trig[row.B].positionType);
                                     //Для контроля
                                     resultsTip.trigBase.push(`place: ${sheetName} , namber: ${row.B} , position: ${jsonData.Base.trig[row.B].position[0]} , ${jsonData.Base.trig[row.B].position[1]}, vycka: ${jsonData.Base.trig[row.B].vycka}, date: ${jsonData.Base.trig[row.B].date}, systemCoordinates: ${coordinateSystemMap[parseInt(jsonData.Base.trig[row.B].systemCoordinates, 10)]}, positionType: ${positionTypemMap[parseInt(jsonData.Base.trig[row.B].positionType, 10)]}`);
@@ -239,11 +240,13 @@ showLoader();
                                 }
                             }
                         });
+                        }
                         results.push(`${sheetName} (leng ${colData[0]}):\n` + resultsTip.nivBase.join('\n') + resultsTip.trigBase.join('\n'));  
                     } else {//poligons
+                        for (let key in typeJobs.poligons) {
                         columnData.forEach(row => {  
                             if (row.C == 'n') { 
-                                if (jsonData.poligons[sheetName][row.B] !== undefined) {
+                                if (jsonData.poligons[typeJobs.poligons[key]][row.B] !== undefined) {
                                     addPlace(resultsTipJobsNiv, sheetName, row.B, jsonData.poligons[sheetName][row.B].position, jsonData.poligons[sheetName][row.B].vycka, jsonData.poligons[sheetName][row.B].date, jsonData.poligons[sheetName][row.B].systemCoordinates, jsonData.poligons[sheetName][row.B].positionType);
                                     //Для контроля
                                     resultsTip.niv.push(`place: ${sheetName} , namber: ${row.B} , position: ${jsonData.poligons[sheetName][row.B].position[0]} , ${jsonData.poligons[sheetName][row.B].position[1]}, vycka: ${jsonData.poligons[sheetName][row.B].vycka}, date: ${jsonData.poligons[sheetName][row.B].date}, systemCoordinates: ${coordinateSystemMap[parseInt(jsonData.poligons[sheetName][row.B].systemCoordinates, 10)]}, positionType: ${positionTypemMap[parseInt(jsonData.poligons[sheetName][row.B].positionType, 10)]}`);
@@ -254,7 +257,7 @@ showLoader();
                                     resultsTip.niv.push(`place: ${sheetName} , namber: ${row.B} , data not found in database`);
                                 }
                             } else {
-                                if (jsonData.poligons[sheetName][row.B] !== undefined) {
+                                if (jsonData.poligons[typeJobs.poligons[key]][row.B] !== undefined) {
                                     addPlace(resultsTipJobsTrig, sheetName, row.B, jsonData.poligons[sheetName][row.B].position, jsonData.poligons[sheetName][row.B].vycka, jsonData.poligons[sheetName][row.B].date, jsonData.poligons[sheetName][row.B].systemCoordinates, jsonData.poligons[sheetName][row.B].positionType);
                                     //Для контроля
                                     resultsTip.trig.push(`place: ${sheetName} , namber: ${row.B} , position: ${jsonData.poligons[sheetName][row.B].position[0]} , ${jsonData.poligons[sheetName][row.B].position[1]}, vycka: ${jsonData.poligons[sheetName][row.B].vycka}, date: ${jsonData.poligons[sheetName][row.B].date}, systemCoordinates: ${coordinateSystemMap[parseInt(jsonData.poligons[sheetName][row.B].systemCoordinates, 10)]}, positionType: ${positionTypemMap[parseInt(jsonData.poligons[sheetName][row.B].positionType, 10)]}`);
@@ -266,6 +269,7 @@ showLoader();
                                 }
                             }
                         });
+                        }
                         //Для контроля
                         results.push(`${sheetName} (leng ${colData[0]}):\n` + resultsTip.niv.join('\n') + resultsTip.trig.join('\n')); 
                     }

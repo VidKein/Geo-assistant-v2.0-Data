@@ -749,6 +749,7 @@ async function loadOptions() {
     const coordinateSelect = document.getElementById('coordinateSystem');
     const positionSelect = document.getElementById('positionType');
     const coordSystem = document.getElementById('coordSystem');
+    
     // Заполняем select для coordinateSystem
     jsonData[siteLanguage].coordinateSystem.forEach(item => {
       const option = document.createElement('option');
@@ -756,6 +757,7 @@ async function loadOptions() {
       option.textContent = item.value;
       coordinateSelect.appendChild(option);
     });
+
     // Заполняем select для coordinateSystem
     jsonData[siteLanguage].coordinateSystem.forEach(item => {
       const option = document.createElement('option');
