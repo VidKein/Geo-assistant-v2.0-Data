@@ -1,3 +1,17 @@
+const queries = require("./db/queries");
+
+(async () => {
+  try {
+    const rows = await queries.name("base_plots");
+    for (let i = 0; i < rows.length; i++) {
+      const element = rows[i];
+      console.log(element.name_base);
+    }
+  } catch (err) {
+    console.error("Ошибка:", err);
+  }
+})();
+
 const express = require('express');
 const fs = require('fs');
 const cors = require('cors'); // Для поддержки запросов с других доменов
@@ -8,6 +22,19 @@ const app = express();
 const PORT = process.env.PORT || 4000; // Используется переменная окружения или 4000 по умолчанию
 app.use(express.json());
 app.use(cors()); // Разрешаем CORS для всех источников
+
+
+// Эндпоинты API
+app.get("/all_points/:siteLanguage", async (req, res) => {
+  const {siteLanguage } = req.params;  
+  const data = await queries.getAllPointsCombined(siteLanguage);
+  res.json(data);
+});
+
+//Отдаём фронтенд (папку public)
+app.use(express.static("public"));
+
+
 
 // Путь к файлу
 //Koordinats
@@ -36,7 +63,7 @@ app.get('/pointDat/:dataName/:dataJobsPlase/:id', (req, res) => {
   });
 });
 //Редоктирование
-app.post('/editDat', (req, res) => { 
+app.post('/editDat', (req, res) => {  
   const {dataPlace, dataName, dataJobs, id, positionX, positionY, vyckaPoint, date, coordinateSystem, positionType } = req.body;     
   fs.readFile(DATA_FILE, 'utf8', (err, data) => {
       if (err) {
@@ -399,7 +426,6 @@ app.post('/importLispPoint', uploadImport.single("file"), (req, res) => {
         res.json({ message: 'Data successfully uploaded and added to JSON file.',addedPoints });
       });
     });
-
 
   } else {
     return res.status(400).send('Unsupported file format.');

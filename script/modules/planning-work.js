@@ -14,6 +14,22 @@ document.addEventListener("infoJDataClik", (dataCalendarg) => {
     document.querySelector(".todayDate").innerText = dataCalendarg.detail;
 });
 
+let pointsData = {}; // глобальная переменная
+async function loadData() {
+  const API_URL = `http://localhost:4000/all_points/${siteLanguage}`;
+  const res = await fetch(API_URL);
+  const data = await res.json();
+  return data;
+}
+// сохраняем в переменную
+loadData().then(data => {
+  pointsData = data;
+  console.log("Данные сохранены в переменной:", pointsData);
+});
+
+
+
+//План работы
 async function planningWork(dateWorld) {
 //Получаем HTML-элементы индикатора загрузки
 let progressContainer = document.getElementById("progress-container");
@@ -105,7 +121,6 @@ showLoader();
             acc[key] = Object.keys(jsonData[key]); // Берём только ключи второго уровня
             return acc;
         }, {});
-        
         //Для контроля
         //console.log('JSON данные Базовые:', jsonData.Base, 'JSON данные Рабочие:', jsonData.poligons);
         
