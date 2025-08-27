@@ -1,25 +1,6 @@
 const pool = require("./connection");
-
-// 🔹 Вспомогательная функция выбора таблицы
-function getTableName(type) {
-  if (type === "base") return "points_Base_geo";
-  if (type === "poligons") return "points_poligons_geo";
-  throw new Error("Неверный тип таблицы");
-}
-function getGroupTable(type) {
-  if (type === "base") return "base_plots";
-  if (type === "poligons") return "poligons_plots";
-  throw new Error("Неверный тип таблицы");
-}
-
-async function name(type) {
-  const [rows] = await pool.query(`SELECT * FROM ${type}`);
-  return rows;
-}
-
-//Получить все записи
+//Получить все записи о Точках 
 function formatRowsToJson(rows, type) {
-
  const key = type === "base" ? "Base" : "poligons";
   const result = { [key]: {} };
 
@@ -65,7 +46,7 @@ async function fetchPoints(type, lang) {
   const params = [lang, lang];
   const [rows] = await pool.query(sql, params);
   return formatRowsToJson(rows, type);
-}
+} 
 
 // --- объединение Base + Poligons ---
 async function getAllPointsCombined(lang) {
@@ -74,8 +55,32 @@ async function getAllPointsCombined(lang) {
   return { ...base, ...poligons };
 }
 
+//Получение информации по коду вида точек и системы координат
+async function getKodLoad(lang) {
+  const [rows] = await pool.query(`
+    SELECT c.id, ct.value AS name
+    FROM codes c
+    JOIN code_translations ct ON ct.code_id = c.id
+    WHERE ct.lang = ?
+  `, [lang]);
 
-// 🔹 Получить одну запись
+  return rows;
+}
+
+
+//Вспомогательная функция выбора таблицы
+function getTableName(type) {
+  if (type === "base") return "points_Base_geo";
+  if (type === "poligons") return "points_poligons_geo";
+  throw new Error("Неверный тип таблицы");
+}
+function getGroupTable(type) {
+  if (type === "base") return "base_plots";
+  if (type === "poligons") return "poligons_plots";
+  throw new Error("Неверный тип таблицы");
+}
+
+// Получить одну запись
 async function getPointById(type, id) {
   const table = getTableName(type);
   const [rows] = await pool.query(`SELECT * FROM ${table} WHERE point_id=?`, [id]);
@@ -111,8 +116,8 @@ async function deletePoint(type, id) {
 }
 
 module.exports = {
-  name,
   getAllPointsCombined,
+  getKodLoad,
   getPointById,
   addPoint,
   updatePoint,

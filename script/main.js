@@ -2,6 +2,13 @@
 const namePointDisplay = localStorage.getItem('namePointDisplay') || "false";
 //Определение языка
 const siteLanguage = localStorage.getItem('siteLanguage') || "eng";
+//Загрузка данных о коде вида точек и системы координат из БД 
+async function loadDataKod() {
+  const API_URL = `http://localhost:4000/kod?lang=${siteLanguage}`;
+  const res = await fetch(API_URL);
+  const data = await res.json();
+  return data;
+}
 //Перевод текста для блока Setting
 let langsMaps = {
     "eng": {
@@ -738,43 +745,38 @@ map.on('overlayremove', function(e) {
 });
 
 //Наполнение селекта для coordinateSystem и positionType
-// Функция загрузки JSON и заполнения select
-async function loadOptions() {
-  const jsonFileKod = './kod/kod.json'; // Укажите URL-адрес json файла
-  try {
-    const response = await fetch(jsonFileKod); // Загружаем JSON
-    const jsonData = await response.json(); // Преобразуем в объект
-    
-    // Получаем элементы select
-    const coordinateSelect = document.getElementById('coordinateSystem');
-    const positionSelect = document.getElementById('positionType');
-    const coordSystem = document.getElementById('coordSystem');
-    
-    // Заполняем select для coordinateSystem
-    jsonData[siteLanguage].coordinateSystem.forEach(item => {
-      const option = document.createElement('option');
-      option.value = item.id;
-      option.textContent = item.value;
-      coordinateSelect.appendChild(option);
-    });
+function loadOptions() {
+    loadDataKod().then(data => {// Система координат из БД
+    const kodCoordinateSystem = data.slice(0, 2);
+    const kodPositionType = data.slice(2);
 
-    // Заполняем select для coordinateSystem
-    jsonData[siteLanguage].coordinateSystem.forEach(item => {
-      const option = document.createElement('option');
-      option.value = item.value;
-      option.textContent = item.value;
-      coordSystem.appendChild(option);
+     // Получаем элементы select
+     const coordinateSelect = document.getElementById('coordinateSystem');
+     const positionSelect = document.getElementById('positionType');
+     const coordSystem = document.getElementById('coordSystem');
+     
+     // Заполняем select для coordinateSystem
+     kodCoordinateSystem.forEach(item => {
+       const option = document.createElement('option');
+       option.value = item.id;
+       option.textContent = item.name;
+       coordinateSelect.appendChild(option);
+     });
+     // Заполняем select для coordinateSystem
+     kodCoordinateSystem.forEach(item => {
+       const option = document.createElement('option');
+       option.value = item.name;
+       option.textContent = item.name;
+       coordSystem.appendChild(option);
+     });
+     // Заполняем select для positionType
+     kodPositionType.forEach(item => {
+       const option = document.createElement('option');
+       option.value = item.id;
+       option.textContent = item.name;
+       positionSelect.appendChild(option);
+     }); 
     });
-    // Заполняем select для positionType
-    jsonData[siteLanguage].positionType.forEach(item => {
-      const option = document.createElement('option');
-      option.value = item.id;
-      option.textContent = item.value;
-      positionSelect.appendChild(option);
-    });
-  } catch (error) {
-    console.error('Ошибка загрузки JSON:', error);
-  }
 }
 
 // Загружаем данные при загрузке страницы
@@ -816,19 +818,19 @@ function determinationСoordinatesClose() {
 }
 //Получаем и передаем информацию координатами
 //Передача информации
-let coordSystem = document.querySelector("#coordSystem");
-let getCoordinates = document.querySelector("#getCoordinates");
-async function loadOptionSelekt(nameSelekt, value) {
-    const jsonFileKod = './kod/kod.json'; // Укажите URL-адрес json файла
-    const response = await fetch(jsonFileKod); // Загружаем JSON
-    const jsonData = await response.json(); // Преобразуем в объект
-        for (const item of jsonData[siteLanguage][nameSelekt]) {
-            if (item.value === value) {
-                document.getElementById(nameSelekt).value = item.id; // Нашли → возвращаем ID
+function loadOptionSelekt(nameSelekt, value) {
+    loadDataKod().then(data => {// Система координат из БД
+    const jsonFileKod = data.slice(0, 2);
+            for (const item of jsonFileKod) {
+                if (item.name === value) {
+                    document.getElementById(nameSelekt).value = item.id; // Нашли → возвращаем ID
+                }
             }
-        }
+    });
 }   
 //Определение координат по карте
+let getCoordinates = document.querySelector("#getCoordinates");
+let coordSystem = document.querySelector("#coordSystem");
 getCoordinates.addEventListener('click', getCoordinatesClick);
 function getCoordinatesClick() {
     let center = map.getCenter();

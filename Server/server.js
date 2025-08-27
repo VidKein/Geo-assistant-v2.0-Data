@@ -1,15 +1,8 @@
 const queries = require("./db/queries");
 
 (async () => {
-  try {
-    const rows = await queries.name("base_plots");
-    for (let i = 0; i < rows.length; i++) {
-      const element = rows[i];
-      console.log(element.name_base);
-    }
-  } catch (err) {
-    console.error("Ошибка:", err);
-  }
+  const rows = await queries.getPointById("base", '9302');
+  console.log(rows);   
 })();
 
 const express = require('express');
@@ -24,13 +17,22 @@ app.use(express.json());
 app.use(cors()); // Разрешаем CORS для всех источников
 
 
-// Эндпоинты API
-app.get("/all_points/:siteLanguage", async (req, res) => {
+//Считываем и передаем инфррмацию о Всех точках planning-work.js
+app.get("/all_points", async (req, res) => {
+  const lang = req.query.lang;
+  //Считываем и передаем инфррмацию о Всех точках planning-work.js
   const {siteLanguage } = req.params;  
-  const data = await queries.getAllPointsCombined(siteLanguage);
+  const data = await queries.getAllPointsCombined(lang);
   res.json(data);
 });
 
+//Считываем и передаем инфррмацию о коде точек и СК main.js
+app.get("/kod", async (req, res) => {
+  const lang = req.query.lang
+  //Считываем и передаем инфррмацию о Всех точках planning-work.js
+  const data = await queries.getKodLoad(lang);
+  res.json(data);
+});
 //Отдаём фронтенд (папку public)
 app.use(express.static("public"));
 
