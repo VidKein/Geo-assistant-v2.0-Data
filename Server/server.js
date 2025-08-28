@@ -1,10 +1,5 @@
 const queries = require("./db/queries");
 
-(async () => {
-  const rows = await queries.getPointById("base", '9302');
-  console.log(rows);   
-})();
-
 const express = require('express');
 const fs = require('fs');
 const cors = require('cors'); // Для поддержки запросов с других доменов
@@ -48,21 +43,13 @@ const UPLOAD_FOLDER = path.join(__dirname, '..','xlsx');;
 
 //Редоктирование/чтение данных
 //Чтение данных и вывод
-app.get('/pointDat/:dataName/:dataJobsPlase/:id', (req, res) => {
-    const {dataName ,dataJobsPlase, id} = req.params;   
-    fs.readFile(DATA_FILE, 'utf8', (err, data) => {
-      if (err) return res.status(500).json({ error: 'Server error' });
-      try {
-          const jsonData = JSON.parse(data);
-          const targetPoint = jsonData[dataName]?.[dataJobsPlase]?.[id];
-          if (!targetPoint) {
-              return res.status(404).json({ error: `Point ${id} not found in ${dataName}/${dataJobsPlase}` });
-          }
-          res.json(targetPoint);
-      } catch {
-          res.status(500).json({ error: 'JSON processing error' });
-      }
-  });
+app.get('/pointDat/:dataName/:dataJobsPlase/:id', async (req, res) => {
+    const {dataName ,dataJobsPlase, id} = req.params;
+          const rows = await queries.getPointById(dataName, id, dataJobsPlase);
+          console.log(rows);
+          if (!rows) {return res.status(404).json({ error: `Point ${id} not found in ${dataName}/${dataJobsPlase}` });}
+          res.json(rows);
+  
 });
 //Редоктирование
 app.post('/editDat', (req, res) => {  

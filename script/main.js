@@ -7,8 +7,10 @@ async function loadDataKod() {
   const API_URL = `http://localhost:4000/kod?lang=${siteLanguage}`;
   const res = await fetch(API_URL);
   const data = await res.json();
+  window.pointsData = data;  //кладём глобально
   return data;
 }
+loadDataKod();
 //Перевод текста для блока Setting
 let langsMaps = {
     "eng": {
@@ -451,8 +453,8 @@ function layerControlPoint(planingBaseNiv, markerBasePointNiv, planingBaseTrig, 
     layerControl = L.control.layers(baseMaps,overlayMaps).addTo(map);
     //Меняем стиль названия слоев
     customizeLayerControl();
-    console.log(layerControl._layers);
-    console.log(overlayMaps);
+    //console.log(layerControl._layers);
+    //console.log(overlayMaps);
 };
 //Функция создаюшая слои
 function removeOverlayLayer(layerName, pointLayer) {  

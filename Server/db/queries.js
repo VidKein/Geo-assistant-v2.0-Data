@@ -70,21 +70,52 @@ async function getKodLoad(lang) {
 
 //Вспомогательная функция выбора таблицы
 function getTableName(type) {
-  if (type === "base") return "points_Base_geo";
+  if (type === "Base") return "points_Base_geo";
   if (type === "poligons") return "points_poligons_geo";
   throw new Error("Неверный тип таблицы");
 }
 function getGroupTable(type) {
-  if (type === "base") return "base_plots";
+  if (type === "Base") return "base_plots";
   if (type === "poligons") return "poligons_plots";
   throw new Error("Неверный тип таблицы");
 }
 
 // Получить одну запись
-async function getPointById(type, id) {
+async function getPointById(type, id, groupName) {
+  console.log(type, id, groupName);
+
+  // Определяем, это Base или Poligons
+  let groupTable, groupField, joinField, idField;
+  if (["niv", "trig"].includes(groupName)) {
+    groupTable = "base_plots";
+    groupField = "name_base";    // текстовое название группы
+    joinField = "b";             // алиас таблицы
+    idField = "base_id";         // числовой ID группы
+  } else {
+    groupTable = "poligons_plots";
+    groupField = "name_poligons";
+    joinField = "pl";
+    idField = "poligons_id";
+  }
   const table = getTableName(type);
-  const [rows] = await pool.query(`SELECT * FROM ${table} WHERE point_id=?`, [id]);
-  return rows[0] || null;
+  const [rows] = await pool.query(`
+    SELECT 
+      p.point_id, 
+      p.x, 
+      p.y, 
+      p.vycka,
+      DATE_FORMAT(p.date, '%Y-%m-%d') AS date,
+      p.systemCoordinates_id,
+      p.positionType_id,
+      ${joinField}.${groupField} AS group_name,   -- название группы
+      ${joinField}.${idField} AS group_id         -- числовой ID группы
+    FROM ${table} p
+    JOIN ${groupTable} ${joinField} ON p.group_name = ${joinField}.${idField}
+    WHERE p.point_id = ? AND ${joinField}.${groupField} = ?;
+  `, [id, groupName]);
+
+  // Если нашли — возвращаем объект, если нет — null
+  return rows.length > 0 ? rows[0] : null;
 }
 
 // 🔹 Добавить

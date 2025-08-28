@@ -1,3 +1,25 @@
+//Передача информации о Системе координат и типах точек из main.js
+//Edit
+window.jsonData = {};
+function waitForData() {
+  if (window.pointsData) {
+    //Система коорднат-Типы расположения точек
+    const kodCoordinateSystem = window.pointsData.slice(0, 2);
+    loadCodesOptions(kodCoordinateSystem, "coordinateSystem");
+    const kodPositionType = window.pointsData.slice(2);
+    loadCodesOptions(kodPositionType, "positionType");
+    //Edit
+    window.jsonData.coordinateSystem = kodCoordinateSystem;
+    window.jsonData.positionType = kodPositionType;
+  } else {
+    setTimeout(waitForData, 10);
+  }
+}
+document.addEventListener("DOMContentLoaded", waitForData);
+
+
+
+
 //Определение языка
 const siteLanguage = localStorage.getItem('siteLanguage') || "eng";
 //Перевод текста для блока Setting
@@ -71,6 +93,15 @@ let runPlasePointEmport = document.querySelector(".runPlasePointExport");
 // Слушаем сообщение от другого скрипта о тип работы
 document.addEventListener("typeJobsArray", (type) => {
     let typeJobsArray = type.detail;
+    //Редоктировани/удаление по видам и типам участка
+    //Удалем при перезагрузки
+    while (document.getElementById("LevelBase").firstChild) {document.getElementById("LevelBase").removeChild(document.getElementById("LevelBase").firstChild);}
+    document.getElementById("LevelBase").innerHTML = "";
+    loadPlotsOptions(typeJobsArray, "Base");
+    //Удалем при перезагрузки
+    while (document.getElementById("Levelpoligons").firstChild) {document.getElementById("Levelpoligons").removeChild(document.getElementById("Levelpoligons").firstChild);}
+    loadPlotsOptions(typeJobsArray, "poligons"); 
+    //Выпадаюшее меню по видам и типам участка
     preparationInfoEditPoint(runTypeAndJobsPoint, runPlasePoint, typeJobsArray, "Point");
     preparationInfoEditPoint(runTypeAndJobsPointImport, runPlasePointImport, typeJobsArray, "Input");
     preparationInfoEditPoint(runTypeAndJobsPointEmport, runPlasePointEmport, typeJobsArray, "Emport");
@@ -193,6 +224,8 @@ for (let i = 0; i < settingBlock.length; i++) {
                         let dataJobsPlase = place.value;//имя участка работы SOD-11/Нив Тах 
                         typeAndJobsPoint.innerText = type.value;
                         plasePoint.innerText = place.value;
+                        console.log(dataName ,dataJobsPlase, namePointAddEditDelat);
+                        
                         infoPoint(dataName ,dataJobsPlase, namePointAddEditDelat);
                         //Передача информации для получения информации
                         async function infoPoint(dataName ,dataJobsPlase, id) {
@@ -200,22 +233,19 @@ for (let i = 0; i < settingBlock.length; i++) {
                             alert(langsInfoSetting[siteLanguage].ErrorEditNamber);
                             e.preventDefault(); // Останавливаем отправку формы
                             } else {
-                                try {
                                     //Извликаем информацию из файла с КОДами по id
                                     async function loadOptionSelekt(nameSelekt, value) {
-                                        const jsonFileKod = './kod/kod.json'; // Укажите URL-адрес json файла
-                                        const response = await fetch(jsonFileKod); // Загружаем JSON
-                                        const jsonData = await response.json(); // Преобразуем в объект
-                                            for (const item of jsonData[siteLanguage][nameSelekt]) {
+                                         if (!window.jsonData[nameSelekt]) return;
+                                            for (const item of window.jsonData[nameSelekt]) {
                                                 if (item.id === value) {
-                                                    document.getElementById(nameSelekt).value = item.id; // Нашли → возвращаем нащзвание
+                                                    document.getElementById(nameSelekt).value = item.id; // Нашли → возвращаем название
                                                 }
                                             }
                                     }   
                                      const API_URL = `http://localhost:4000/pointDat/${dataName}/${dataJobsPlase}/${id}`;
                                      const response = await fetch(API_URL);
                                      const data = await response.json();
-                                     if (response.ok) {
+                                     if (response.ok==true) {
                                         //Открываем окно для внесения информации
                                         settingBlockFull.style.display = "none";
                                         document.querySelector("#import").style.display = "block";
@@ -240,12 +270,13 @@ for (let i = 0; i < settingBlock.length; i++) {
                                             plasePoint.innerText = place.value;
                                         }
                                         //Выводим информацию
-                                         document.getElementById("position X").value = data.position[0];
-                                         document.getElementById("position Y").value = data.position[1];
+                                         document.getElementById("position X").value = data.x;
+                                         document.getElementById("position Y").value = data.y;
                                          document.getElementById("vycka").value = data.vycka;
                                          document.getElementById("date").value = data.date; 
-                                         loadOptionSelekt("coordinateSystem" , data.systemCoordinates);
-                                         loadOptionSelekt("positionType" , data.positionType);
+
+                                         loadOptionSelekt("coordinateSystem" , data.systemCoordinates_id);
+                                         loadOptionSelekt("positionType" , data.positionType_id);
                 
                                          //Закрытие изменений
                                         document.querySelector("#editPoint").addEventListener("click", ()=>{
@@ -258,10 +289,6 @@ for (let i = 0; i < settingBlock.length; i++) {
                                      } else {
                                          alert(data.error);
                                      }
-                                }catch(error) {
-                                    console.error("Errors load file", error);
-                                    alert(langsInfoSetting[siteLanguage].ErrorLoadEdit);
-                                }
                            }
                          }
 
@@ -510,14 +537,13 @@ document.getElementById('clearSettings').addEventListener('click', () => {
     }
 });
 //Заполнение блока Система коорднат-Типы расположения точек
-loadCodesOptions("coordinateSystem");
-loadCodesOptions("positionType");
-async function loadCodesOptions(nameLoad) {
-    const jsonFileKod = './kod/kod.json'; // Укажите URL-адрес json файла
-    const response = await fetch(jsonFileKod); // Загружаем JSON
-    const jsonData = await response.json(); // Преобразуем в объект
+async function loadCodesOptions(jsonData, nameLoad) {
     //Заполняем количество
-    document.getElementById("leveling"+nameLoad).textContent = " - "+jsonData[siteLanguage][nameLoad].length;
+    if (nameLoad == "coordinateSystem") {
+      document.getElementById("leveling"+nameLoad).textContent = " - "+jsonData.length;
+    }else{
+      document.getElementById("leveling"+nameLoad).textContent = " - "+jsonData.length;
+    }
     // Создаем новый div для новых классов
     const loadCodesOptions = document.createElement('div');
     loadCodesOptions.className = "new"+nameLoad; // Добавляем класс
@@ -528,34 +554,23 @@ async function loadCodesOptions(nameLoad) {
     loadCodesOptions.setAttribute("title", "New kod");
     loadCodesOptions.setAttribute("data-typ", nameLoad);// typ кода
     document.getElementById("Level"+nameLoad).appendChild(loadCodesOptions);
-        for (const item of jsonData[siteLanguage][nameLoad]) {
+        for (const item of jsonData) {
             // Создаем новый div заполнения
             const loadOption = document.createElement('div');
             loadOption.className = nameLoad; // Добавляем класс
-            loadOption.textContent = item.value; // Устанавливаем текст внутри div
+            loadOption.textContent = item.name; // Устанавливаем текст внутри div
             let delatCode = document.createElement('div');
             delatCode.className = 'delatCode'+nameLoad;
             delatCode.setAttribute("title", "Delat code");
-            delatCode.setAttribute("data-name", item.value);// имя кода
+            delatCode.setAttribute("data-name", item.name);// имя кода
             delatCode.setAttribute("data-id", item.id);// id кода
             delatCode.setAttribute("data-typ", nameLoad);// typ кода
             loadOption.appendChild(delatCode);
             document.getElementById("Level"+nameLoad).appendChild(loadOption);
         }
 }
-//Заполнение блока Участка коорднат - место работы
-loadPlotsOptions("Base");
-loadPlotsOptions("poligons");
-async function loadPlotsOptions(nameLoad){
-    //Извлекаем информацию
-    const jsonFileKod = './koordinaty/koordinats.json'; // Укажите URL-адрес json файла
-    const response = await fetch(jsonFileKod); // Загружаем JSON
-    const jsonData = await response.json(); // Преобразуем в объект
-    //Извлекаем только ключи второго уровня
-    const typeJobs = Object.keys(jsonData).reduce((acc, key) => {
-            acc[key] = Object.keys(jsonData[key]); // Берём только ключи второго уровня
-            return acc;
-    }, {});
+//Заполнение блока Участка - место работы
+async function loadPlotsOptions(typeJobs, nameLoad){
     //Заполняем количество  
     document.getElementById("leveling"+nameLoad).textContent = " - "+typeJobs[nameLoad].length;
     // Создаем новый div для новых классов

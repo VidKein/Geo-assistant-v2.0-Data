@@ -74,7 +74,7 @@ async function planningWork(dateWorld, jsonData) {
     let powerFactor = Math.min((cpuCores + ramSize) / 10, 1);
     let loadFactor = Math.max(0.3, (speedFactor + powerFactor) / 2);
 
-    console.log(`Фактор загрузки: ${loadFactor}`);
+    //console.log(`Фактор загрузки: ${loadFactor}`);
 
     //Показываем лоадер перед началом загрузки
     showLoader();
@@ -278,14 +278,14 @@ async function planningWork(dateWorld, jsonData) {
             //console.log(resultsTip.trig.join('\n'));
         
             ///Создаем и отправляем пользовательское событие с данными
-            //План работы    
+            //План работы в другой скрипт main.js  
             const planning = new CustomEvent("planningWork", { detail: {baseNiv: resultsTipJobsNivBase, baseTrig: resultsTipJobsTrigBase, planningNiv: resultsTipJobsNiv, planningTrig: resultsTipJobsTrig}});
             document.dispatchEvent(planning);
 
-            //Передача данных по типк и виде работ в другой скрипт setting.js
+            //Передача данных по типе и виде работ в другой скрипт setting.js
             const type = new CustomEvent("typeJobsArray", { detail: typeJobs });
             document.dispatchEvent(type);
-            //Название участка и количество точек
+            //Название участка и количество точек в другой скрипт calendarg.js
             const infoJobs = new CustomEvent("infoJobsPoint", { detail: infoJobsPoint });
             document.dispatchEvent(infoJobs);
         } catch (error) {

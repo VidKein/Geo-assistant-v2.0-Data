@@ -168,7 +168,7 @@ dateCalendar[0].addEventListener("click",(e)=>{
             };
             e.target.className += " active";
         }
-        //Передача информации до planning-work.js события
+        //Передача информации до planning-work.js события в другой скрипт palanning-work.js
         const dataCalendarg = new CustomEvent("infoJDataClik", { detail: date });
         document.dispatchEvent(dataCalendarg);
     }
