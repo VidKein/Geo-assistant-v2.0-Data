@@ -46,10 +46,8 @@ const UPLOAD_FOLDER = path.join(__dirname, '..','xlsx');;
 app.get('/pointDat/:dataName/:dataJobsPlase/:id', async (req, res) => {
     const {dataName ,dataJobsPlase, id} = req.params;
           const rows = await queries.getPointById(dataName, id, dataJobsPlase);
-          console.log(rows);
           if (!rows) {return res.status(404).json({ error: `Point ${id} not found in ${dataName}/${dataJobsPlase}` });}
           res.json(rows);
-  
 });
 //Редоктирование
 app.post('/editDat', (req, res) => {  
@@ -169,7 +167,6 @@ app.post('/delatDat', (req, res) => {
     });
 
   });
-
 });
 
 // Удаление Cod
