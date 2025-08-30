@@ -2,22 +2,35 @@
 //Edit
 window.jsonData = {};
 function waitForData() {
-  if (window.pointsData) {
+  if (window.pointsData) {    
     //Система коорднат-Типы расположения точек
-    const kodCoordinateSystem = window.pointsData.slice(0, 2);
+    const kodCoordinateSystem = window.pointsData.codes.slice(0, window.pointsData.count_SC.count_rows);
     loadCodesOptions(kodCoordinateSystem, "coordinateSystem");
-    const kodPositionType = window.pointsData.slice(2);
+    const kodPositionType = window.pointsData.codes.slice(window.pointsData.count_SC.count_rows);
     loadCodesOptions(kodPositionType, "positionType");
     //Edit
     window.jsonData.coordinateSystem = kodCoordinateSystem;
     window.jsonData.positionType = kodPositionType;
+
+    //Информация о участках
+    let typeJobsArray = window.pointsData;
+    //Редоктировани/удаление по видам и типам участка
+    //Удалем при перезагрузки
+    while (document.getElementById("LevelBase").firstChild) {document.getElementById("LevelBase").removeChild(document.getElementById("LevelBase").firstChild);}
+    document.getElementById("LevelBase").innerHTML = "";
+    loadPlotsOptions(typeJobsArray, "Base");
+    //Удалем при перезагрузки
+    while (document.getElementById("Levelpoligons").firstChild) {document.getElementById("Levelpoligons").removeChild(document.getElementById("Levelpoligons").firstChild);}
+    loadPlotsOptions(typeJobsArray, "poligons"); 
+    //Выпадаюшее меню по видам и типам участка
+    preparationInfoEditPoint(runTypeAndJobsPoint, runPlasePoint, typeJobsArray, "Point");
+    preparationInfoEditPoint(runTypeAndJobsPointImport, runPlasePointImport, typeJobsArray, "Input");
+    preparationInfoEditPoint(runTypeAndJobsPointEmport, runPlasePointEmport, typeJobsArray, "Emport");
   } else {
     setTimeout(waitForData, 10);
   }
 }
 document.addEventListener("DOMContentLoaded", waitForData);
-
-
 
 
 //Определение языка
@@ -90,22 +103,7 @@ let runPlasePointImport = document.querySelector(".runPlasePointImport");
 //Тип и Вид работы при Экспорте точки
 let runTypeAndJobsPointEmport = document.querySelector(".runTypeAndJobsPointExport");
 let runPlasePointEmport = document.querySelector(".runPlasePointExport");
-// Слушаем сообщение от другого скрипта о тип работы
-document.addEventListener("typeJobsArray", (type) => {
-    let typeJobsArray = type.detail;
-    //Редоктировани/удаление по видам и типам участка
-    //Удалем при перезагрузки
-    while (document.getElementById("LevelBase").firstChild) {document.getElementById("LevelBase").removeChild(document.getElementById("LevelBase").firstChild);}
-    document.getElementById("LevelBase").innerHTML = "";
-    loadPlotsOptions(typeJobsArray, "Base");
-    //Удалем при перезагрузки
-    while (document.getElementById("Levelpoligons").firstChild) {document.getElementById("Levelpoligons").removeChild(document.getElementById("Levelpoligons").firstChild);}
-    loadPlotsOptions(typeJobsArray, "poligons"); 
-    //Выпадаюшее меню по видам и типам участка
-    preparationInfoEditPoint(runTypeAndJobsPoint, runPlasePoint, typeJobsArray, "Point");
-    preparationInfoEditPoint(runTypeAndJobsPointImport, runPlasePointImport, typeJobsArray, "Input");
-    preparationInfoEditPoint(runTypeAndJobsPointEmport, runPlasePointEmport, typeJobsArray, "Emport");
-});
+
 for (let i = 0; i < settingBlock.length; i++) {
     settingBlock[i].addEventListener("click",(e)=>{
         if (settingBlock[i].style.display == "block") { 
@@ -224,7 +222,6 @@ for (let i = 0; i < settingBlock.length; i++) {
                         let dataJobsPlase = place.value;//имя участка работы SOD-11/Нив Тах 
                         typeAndJobsPoint.innerText = type.value;
                         plasePoint.innerText = place.value;
-                        console.log(dataName ,dataJobsPlase, namePointAddEditDelat);
                         
                         infoPoint(dataName ,dataJobsPlase, namePointAddEditDelat);
                         //Передача информации для получения информации
@@ -497,10 +494,12 @@ function preparationInfoEditPoint(runTypeAndJobsPoint, runPlasePoint, typeJobsAr
 
                         // Заполняем первый select (Base, poligons)
                         Object.keys(typeJobsArray).forEach(key => {
-                            const option = document.createElement("option");
-                            option.value = key;
-                            option.textContent = key;
-                            document.getElementById("firstSelect"+nameId).appendChild(option);
+                            if (key =="Base" || key =="poligons" ) {
+                                const option = document.createElement("option");
+                                option.value = key;
+                                option.textContent = key;
+                                document.getElementById("firstSelect"+nameId).appendChild(option);   
+                            }
                         });
 
                         //Обработчик изменения первого select
@@ -510,8 +509,8 @@ function preparationInfoEditPoint(runTypeAndJobsPoint, runPlasePoint, typeJobsAr
                             if (selectedCategory) {
                                 typeJobsArray[selectedCategory].forEach(subKey => {
                                     const option = document.createElement("option");
-                                    option.value = subKey;
-                                    option.textContent = subKey;
+                                    option.value = subKey.name;
+                                    option.textContent = subKey.name;
                                     document.getElementById("secondSelect"+nameId).appendChild(option);
                                 });
                             }
@@ -587,12 +586,12 @@ async function loadPlotsOptions(typeJobs, nameLoad){
             // Создаем новый div заполнения
             const loadOption = document.createElement('div');
             loadOption.className = nameLoad; // Добавляем класс
-            loadOption.textContent = item; // Устанавливаем текст внутри div
+            loadOption.textContent = item.name; // Устанавливаем текст внутри div
             let delatCode = document.createElement('div');
             delatCode.className = 'delat'+nameLoad;
             delatCode.setAttribute("title", "Delat "+nameLoad);
-            delatCode.setAttribute("data-name", item);// имя кода
-            delatCode.setAttribute("data-id", item);// id кода
+            delatCode.setAttribute("data-name", item.name);// имя кода
+            delatCode.setAttribute("data-id", item.name);// id кода
             delatCode.setAttribute("data-typ", nameLoad);// typ кода
             loadOption.appendChild(delatCode);
             document.getElementById("Level"+nameLoad).appendChild(loadOption);

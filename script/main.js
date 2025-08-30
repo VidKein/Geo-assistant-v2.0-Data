@@ -10,7 +10,6 @@ async function loadDataKod() {
   window.pointsData = data;  //кладём глобально
   return data;
 }
-loadDataKod();
 //Перевод текста для блока Setting
 let langsMaps = {
     "eng": {
@@ -749,8 +748,8 @@ map.on('overlayremove', function(e) {
 //Наполнение селекта для coordinateSystem и positionType
 function loadOptions() {
     loadDataKod().then(data => {// Система координат из БД
-    const kodCoordinateSystem = data.slice(0, 2);
-    const kodPositionType = data.slice(2);
+    const kodCoordinateSystem = data.codes.slice(0, data.count_SC.count_rows);
+    const kodPositionType = data.codes.slice(data.count_SC.count_rows);
 
      // Получаем элементы select
      const coordinateSelect = document.getElementById('coordinateSystem');
@@ -822,7 +821,7 @@ function determinationСoordinatesClose() {
 //Передача информации
 function loadOptionSelekt(nameSelekt, value) {
     loadDataKod().then(data => {// Система координат из БД
-    const jsonFileKod = data.slice(0, 2);
+    const jsonFileKod = data.codes.slice(0, data.count_SC.count_rows);
             for (const item of jsonFileKod) {
                 if (item.name === value) {
                     document.getElementById(nameSelekt).value = item.id; // Нашли → возвращаем ID

@@ -282,9 +282,6 @@ async function planningWork(dateWorld, jsonData) {
             const planning = new CustomEvent("planningWork", { detail: {baseNiv: resultsTipJobsNivBase, baseTrig: resultsTipJobsTrigBase, planningNiv: resultsTipJobsNiv, planningTrig: resultsTipJobsTrig}});
             document.dispatchEvent(planning);
 
-            //Передача данных по типе и виде работ в другой скрипт setting.js
-            const type = new CustomEvent("typeJobsArray", { detail: typeJobs });
-            document.dispatchEvent(type);
             //Название участка и количество точек в другой скрипт calendarg.js
             const infoJobs = new CustomEvent("infoJobsPoint", { detail: infoJobsPoint });
             document.dispatchEvent(infoJobs);

@@ -1,5 +1,15 @@
 const pool = require("./connection");
+
+/*ТОЧКИ*/
+//Вспомогательная функция выбора таблицы
+function getTableName(type) {
+  if (type === "Base") return "points_Base_geo";
+  if (type === "poligons") return "points_poligons_geo";
+  throw new Error("Неверный тип таблицы");
+}
+
 //Получить все записи о Точках 
+//Собираем полученную информацию
 function formatRowsToJson(rows, type) {
  const key = type === "base" ? "Base" : "poligons";
   const result = { [key]: {} };
@@ -18,7 +28,7 @@ function formatRowsToJson(rows, type) {
 
   return result;
 }
-
+//Считываем с БД
 async function fetchPoints(type, lang) {
   const table = type === "base" ? "points_Base_geo" : "points_poligons_geo";
   const groupTable = type === "base" ? "base_plots" : "poligons_plots";
@@ -44,46 +54,21 @@ async function fetchPoints(type, lang) {
   `;
 
   const params = [lang, lang];
-  const [rows] = await pool.query(sql, params);
-  return formatRowsToJson(rows, type);
+  const [result] = await pool.query(sql, params);
+  return formatRowsToJson(result, type);
 } 
 
-// --- объединение Base + Poligons ---
+// объединение Base + Poligons
 async function getAllPointsCombined(lang) {
   const base = await fetchPoints("base", lang);
   const poligons = await fetchPoints("poligons", lang);
   return { ...base, ...poligons };
 }
 
-//Получение информации по коду вида точек и системы координат
-async function getKodLoad(lang) {
-  const [rows] = await pool.query(`
-    SELECT c.id, ct.value AS name
-    FROM codes c
-    JOIN code_translations ct ON ct.code_id = c.id
-    WHERE ct.lang = ?
-  `, [lang]);
-
-  return rows;
-}
-
-
-//Вспомогательная функция выбора таблицы
-function getTableName(type) {
-  if (type === "Base") return "points_Base_geo";
-  if (type === "poligons") return "points_poligons_geo";
-  throw new Error("Неверный тип таблицы");
-}
-function getGroupTable(type) {
-  if (type === "Base") return "base_plots";
-  if (type === "poligons") return "poligons_plots";
-  throw new Error("Неверный тип таблицы");
-}
-
 // Получить одну запись
 async function getPointById(type, id, groupName) {
   console.log(type, id, groupName);
-
+  
   // Определяем, это Base или Poligons
   let groupTable, groupField, joinField, idField;
   if (["niv", "trig"].includes(groupName)) {
@@ -98,7 +83,7 @@ async function getPointById(type, id, groupName) {
     idField = "poligons_id";
   }
   const table = getTableName(type);
-  const [rows] = await pool.query(`
+  const [result] = await pool.query(`
     SELECT 
       p.point_id, 
       p.x, 
@@ -115,8 +100,109 @@ async function getPointById(type, id, groupName) {
   `, [id, groupName]);
 
   // Если нашли — возвращаем объект, если нет — null
-  return rows.length > 0 ? rows[0] : null;
+  return result.length > 0 ? result[0] : null;
 }
+
+/*КОДЫ*/
+
+//Получение информации по коду вида точек и системы координат
+async function getKodLoad(lang) {
+  const [result] = await pool.query(`
+    SELECT c.id, ct.value AS name
+    FROM codes c
+    JOIN code_translations ct ON ct.code_id = c.id
+    WHERE ct.lang = ?
+  `, [lang]);
+
+  const [[namberRow]] = await pool.query(`
+     SELECT COUNT(*) AS count_rows
+     FROM codes
+     WHERE code_type_id = 1;
+  `);
+   const [kodBase] = await pool.query(`SELECT base_id AS id, name_base AS name FROM base_plots`);
+   const [kodPoligons] = await pool.query(`SELECT poligons_id AS id, name_poligons AS name FROM poligons_plots`);
+   
+      return {
+        codes: result,        // список кодов с переводами Типов точек и Системы координат
+        count_SC: namberRow,     // количество переводов для code_id=1 Системы координат
+        Base: kodBase,     // список кодов Base
+        poligons: kodPoligons // список кодов Poligons
+      };
+}
+
+//Вспомогательная функция выбора таблицы
+function getGroupTable(type) {
+  if (type === "Base") return "base_plots";
+  if (type === "poligons") return "poligons_plots";
+  throw new Error("Неверный тип таблицы");
+}
+function getNameRow(type) {
+  if (type === "Base") return "name_base";
+  if (type === "poligons") return "name_poligons";
+  throw new Error("Неверный тип таблицы");
+}
+
+//Добавление Места расположения
+async function postNewPlot(namePlot, nameTyp) {
+  const table = getGroupTable(nameTyp);
+  const nameRow = getNameRow(nameTyp);
+
+  // Проверяем, есть ли уже такая запись
+  const [rows] = await pool.query(
+    `SELECT * FROM \`${table}\` WHERE \`${nameRow}\` = ?`,
+    [namePlot]
+  );
+  if (rows.length > 0) {
+    return { status: "duplicate", message: "Запись уже существует" };
+  }
+    // Добавляем новую запись
+  const [result] = await pool.query(
+    `INSERT INTO \`${table}\` (\`${nameRow}\`) VALUES (?)`,
+    [namePlot]
+  );
+  return { status: "success", id: namePlot };
+}
+//Удаление Места расположения
+async function postDelatPlot(namePlot, nameTyp) {
+  console.log(namePlot, nameTyp);
+  const table = getGroupTable(nameTyp);
+  const nameRow = getNameRow(nameTyp);
+  const tableRowsPoint = getTableName(nameTyp);
+  // Проверяем на наличие записи БД
+  const [rows] = await pool.query(
+    `SELECT * FROM \`${table}\` WHERE \`${nameRow}\` = ?`,
+    [namePlot]
+  );
+  if (rows.length === 0) {
+    return { status: "duplicate", message: "Запись нет" };
+  }
+  // Проверяем на наличие записи в ВАЖНЫХ таблицах с инфо по точкам
+  const [rowsPoint] = await pool.query(
+    `SELECT * FROM \`${tableRowsPoint}\` WHERE group_name = ?`,
+    [namePlot]
+  );
+  if (rowsPoint.length > 0) {
+    return { status: "connetTabl", message: " есть в таблицах о точках, удалите таблицу или точку." };
+  }
+  //Удаляем запись
+  const [result] = await pool.query(
+      `DELETE FROM \`${table}\` WHERE \`${table}\`.\`${nameRow}\` = ?`,[namePlot]
+     );
+  return { status: "success", id: namePlot };
+}
+
+//Добавление Кода
+async function postNewCod(nameCod, nameTyp, siteLanguage) {
+  console.log(nameCod, nameTyp, siteLanguage);
+
+}
+//Удаление Кода
+async function postDelatCod(nameCod, nameTyp, siteLanguage) {
+  console.log(nameCod, nameTyp, siteLanguage);
+
+}
+
+/*ЭКСПОРТ/ИМПОРТ*/
 
 // 🔹 Добавить
 async function addPoint(type, point) {
@@ -150,6 +236,10 @@ module.exports = {
   getAllPointsCombined,
   getKodLoad,
   getPointById,
+  postDelatPlot,
+  postNewPlot,
+  postNewCod,
+  postDelatCod,
   addPoint,
   updatePoint,
   deletePoint,

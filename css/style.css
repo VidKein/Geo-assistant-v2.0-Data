@@ -494,7 +494,7 @@ background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w
   border: 1px solid black;
   border-radius: 5px;
   z-index: 1000;
-  width: 121px;
+  width: 130px;
 }
 #getCoordinates{
 cursor: pointer;

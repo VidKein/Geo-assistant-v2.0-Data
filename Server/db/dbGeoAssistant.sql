@@ -1408,6 +1408,8 @@ CREATE TABLE codes (
 -- coordinateSystem
 INSERT INTO codes (id, code_type_id) VALUES (1, 1);
 INSERT INTO codes (id, code_type_id) VALUES (2, 1);
+/*New*/
+INSERT INTO codes (id, code_type_id) VALUES (19, 1);
 
 
 -- positionType (18 штук)
@@ -1510,5 +1512,9 @@ INSERT INTO code_translations (code_id, lang, value) VALUES (17, 'ua', 'prizma')
 INSERT INTO code_translations (code_id, lang, value) VALUES (18, 'eng', 'pin');
 INSERT INTO code_translations (code_id, lang, value) VALUES (18, 'cz', 'kolík');
 INSERT INTO code_translations (code_id, lang, value) VALUES (18, 'ua', 'колишек');
+/*New*/
+INSERT INTO code_translations (code_id, lang, value) VALUES (19, 'eng', 'SC2000');
+INSERT INTO code_translations (code_id, lang, value) VALUES (19, 'cz', 'SC2000');
+INSERT INTO code_translations (code_id, lang, value) VALUES (19, 'ua', 'SC2000');
 
 -- --------------------------------------------------------

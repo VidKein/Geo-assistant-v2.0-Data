@@ -11,44 +11,103 @@ const PORT = process.env.PORT || 4000; // Используется переме�
 app.use(express.json());
 app.use(cors()); // Разрешаем CORS для всех источников
 
+//Отдаём фронтенд (папку public)
+app.use(express.static("public"));
 
+/*ТОЧКИ*/
 //Считываем и передаем инфррмацию о Всех точках planning-work.js
 app.get("/all_points", async (req, res) => {
   const lang = req.query.lang;
+  try{
   //Считываем и передаем инфррмацию о Всех точках planning-work.js
   const {siteLanguage } = req.params;  
   const data = await queries.getAllPointsCombined(lang);
   res.json(data);
+  } catch (err) {
+    console.error("Ошибка в /all_points:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
 });
 
+//Чтение данных о точке
+app.get('/pointDat/:dataName/:dataJobsPlase/:id', async (req, res) => {
+    const {dataName ,dataJobsPlase, id} = req.params;
+    try{
+        const rows = await queries.getPointById(dataName, id, dataJobsPlase);
+        if (!rows) {return res.status(404).json({ error: `Point ${id} not found in ${dataName}/${dataJobsPlase}` });}
+        res.json(rows);
+    } catch (err) {
+    console.error("Ошибка в /pointDat:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+    }
+});
+/*КОДЫ*/
 //Считываем и передаем инфррмацию о коде точек и СК main.js
 app.get("/kod", async (req, res) => {
   const lang = req.query.lang
+  try{
   //Считываем и передаем инфррмацию о Всех точках planning-work.js
-  const data = await queries.getKodLoad(lang);
+  const data = await queries.getKodLoad(lang);  
   res.json(data);
+  } catch (err) {
+    console.error("Ошибка в /kod:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
 });
-//Отдаём фронтенд (папку public)
-app.use(express.static("public"));
 
+//Добавление Места расположения
+app.post('/newPlot', async (req, res) => {
+  const {namePlot, nameTyp} = req.body;
+  try {
+    const data = await queries.postNewPlot(namePlot, nameTyp);
+    res.json(data);
+  } catch (err) {
+    console.error("Ошибка в /newPlot:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+//Удаление Места расположения
+ app.post('/delatPlot', async (req, res) => {
+  const {namePlot, nameTyp} = req.body;
+  try{
+    const data = await queries.postDelatPlot(namePlot, nameTyp);
+    res.json(data);
+  } catch (err) {
+    console.error("Ошибка в /delatPlot:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+//Добавление Cod
+app.post('/newCod', async (req, res) => {
+  const {nameCod, nameTyp, siteLanguage} = req.body;
+  try{
+  const data = await queries.postNewCod(nameCod, nameTyp, siteLanguage);
+  res.json(data);
+  } catch (err) {
+    console.error("Ошибка в /newCod:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+//Удаление Cod
+app.post('/delatCod', async (req, res) => {
+  const {idCod, nameCod, nameTyp, siteLanguage} = req.body;
+  try{
+  const data = await queries.postDelatCod(nameCod, nameTyp, siteLanguage);
+  res.json(data);
+  } catch (err) {
+    console.error("Ошибка в /delatCod:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
 
 
 // Путь к файлу
-//Koordinats
-const DATA_FILE = path.join(__dirname,  '..','koordinaty', 'koordinats.json');
-//Cod
-const DATA_COD = path.join(__dirname,  '..','kod', 'kod.json');
 //File
 const UPLOAD_FOLDER = path.join(__dirname, '..','xlsx');;
 
 //Редоктирование/чтение данных
-//Чтение данных и вывод
-app.get('/pointDat/:dataName/:dataJobsPlase/:id', async (req, res) => {
-    const {dataName ,dataJobsPlase, id} = req.params;
-          const rows = await queries.getPointById(dataName, id, dataJobsPlase);
-          if (!rows) {return res.status(404).json({ error: `Point ${id} not found in ${dataName}/${dataJobsPlase}` });}
-          res.json(rows);
-});
+
 //Редоктирование
 app.post('/editDat', (req, res) => {  
   const {dataPlace, dataName, dataJobs, id, positionX, positionY, vyckaPoint, date, coordinateSystem, positionType } = req.body;     
@@ -166,137 +225,6 @@ app.post('/delatDat', (req, res) => {
       res.json({ success: true, message: `Data for ID ${id} has been removed.` });
     });
 
-  });
-});
-
-// Удаление Cod
-app.post('/delatCod', (req, res) => {
-  const {idCod, nameCod, nameTyp, siteLanguage} = req.body;
-  //Считываем файл  
-  fs.readFile(DATA_COD, 'utf8', (err, data) => {  
-    if (err) {
-      console.error('Error reading JSON:', err);
-      return res.status(500).json({ error: 'Error reading JSON.' });
-    }
-    //Парсим файл 
-    let jsonCod = JSON.parse(data);// Преобразуем JSON в объект
-    
-    if (!jsonCod[siteLanguage][nameTyp]) {
-      return res.status(400).json({ error: 'Invalid category.' });
-    }
-
-    // Найти индекс элемента по id
-    const index = jsonCod[siteLanguage][nameTyp].findIndex(item => item.id == idCod);
-    if (index === -1) {
-      return res.status(404).json({ error: 'Item not found.' });
-    }
-
-    // Удаление элемента без перезаписи всего массива
-    jsonCod[siteLanguage][nameTyp].splice(index, 1);
-
-    //Перезаписываем файл
-    fs.writeFile(DATA_COD, JSON.stringify(jsonCod, null, 2), (err) => {
-      if (err) {
-        console.error('JSON write error:', err);
-        return res.status(500).json({ error: 'JSON write error.' });
-      }
-      res.json({ success: true, message: `This code - ${nameCod} deleted.` });
-    });
-    
-  });
-});
-
-// Добавление Cod
-app.post('/newCod', (req, res) => {
-  const {nameCod, nameTyp, siteLanguage} = req.body;
-  //Считываем файл  
-  fs.readFile(DATA_COD, 'utf8', (err, data) => {  
-    if (err) {
-      console.error('Error reading JSON:', err);
-      return res.status(500).json({ error: 'Error reading JSON file.' });
-    }
-    //Парсим файл 
-    let jsonCod = JSON.parse(data);// Преобразуем JSON в объект
-    
-    if (!jsonCod[siteLanguage][nameTyp]) {
-      return res.status(400).json({ error: 'Invalid category.' });
-    }
-
-    // Определяем новый ID как последний ID + 1
-    const lastId = jsonCod[siteLanguage][nameTyp].length > 0 ? jsonCod[siteLanguage][nameTyp][jsonCod[siteLanguage][nameTyp].length - 1].id : 0;
-    const newId = lastId + 1;
-
-    // Добавление нового элемента
-    jsonCod[siteLanguage][nameTyp].push({ id: newId, value: nameCod });
-
-    //Перезаписываем файл
-    fs.writeFile(DATA_COD, JSON.stringify(jsonCod, null, 2), (err) => {
-      if (err) {
-        console.error('Error reading JSON:', err);
-        return res.status(500).json({ error: 'Error reading JSON file.' });
-      }
-      res.json({ success: true, message: `This code - ${nameCod} added.` });
-    });
-  });
-});
-
-// Удаление Места расположения
- app.post('/delatPlot', (req, res) => {
-  const {namePlot, nameTyp} = req.body;
-    //Считываем файл  
-  fs.readFile(DATA_FILE, 'utf8', (err, data) => { 
-    if (err) {
-      console.error('Error reading JSON:', err);
-      return res.status(500).json({ error: 'Error reading JSON file.' });
-    }
-    //Парсим файл 
-    let jsonPlot = JSON.parse(data);// Преобразуем JSON в объект
-    
-    if (!jsonPlot[nameTyp]) {
-      return res.status(400).json({ error: 'Invalid category.' });
-    }
-    if (Object.keys(jsonPlot[nameTyp][namePlot]).length > 0) {
-        res.json({ success: true, message: `Cannot delete full array - ${namePlot}.` });
-    } else {
-      delete jsonPlot[nameTyp][namePlot];
-      //Перезаписываем файл
-      fs.writeFile(DATA_FILE, JSON.stringify(jsonPlot, null, 2), (err) => {
-        if (err) {
-          console.error('Error reading JSON:', err);
-          return res.status(500).json({ error: 'Error reading JSON file.' });
-        }
-        res.json({ success: true, message: `This plot - ${namePlot} delat.` });
-      });
-    }
-  });
-});
-// Добавление Места расположения
-app.post('/newPlot', (req, res) => {
-  const {namePlot, nameTyp} = req.body;
-  //Считываем файл  
-  fs.readFile(DATA_FILE, 'utf8', (err, data) => {  
-    if (err) {
-      console.error('Error reading JSON:', err);
-      return res.status(500).json({ error: 'Error reading JSON file.' });
-    }
-    //Парсим файл 
-    let jsonPlot = JSON.parse(data);// Преобразуем JSON в объект
-    
-    if (!jsonPlot[nameTyp]) {
-      return res.status(400).json({ error: 'Invalid category.' });
-    }
-
-    // Добавление нового элемента
-    jsonPlot[nameTyp][namePlot] = {};
-
-    //Перезаписываем файл
-    fs.writeFile(DATA_FILE, JSON.stringify(jsonPlot, null, 2), (err) => {
-      if (err) {
-        console.error('Error reading JSON:', err);
-        return res.status(500).json({ error: 'Error reading JSON file.' });
-      }
-      res.json({ success: true, message: `This plot - ${namePlot} added.` });
-    });
   });
 });
 
