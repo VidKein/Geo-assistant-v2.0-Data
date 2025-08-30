@@ -68,9 +68,9 @@ app.post('/newPlot', async (req, res) => {
 });
 //Удаление Места расположения
  app.post('/delatPlot', async (req, res) => {
-  const {namePlot, nameTyp} = req.body;
+  const {namePlot, nameTyp, nameId} = req.body;
   try{
-    const data = await queries.postDelatPlot(namePlot, nameTyp);
+    const data = await queries.postDelatPlot(namePlot, nameTyp, nameId);
     res.json(data);
   } catch (err) {
     console.error("Ошибка в /delatPlot:", err);

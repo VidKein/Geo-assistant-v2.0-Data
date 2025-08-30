@@ -163,24 +163,25 @@ async function postNewPlot(namePlot, nameTyp) {
   return { status: "success", id: namePlot };
 }
 //Удаление Места расположения
-async function postDelatPlot(namePlot, nameTyp) {
-  console.log(namePlot, nameTyp);
+async function postDelatPlot(namePlot, nameTyp, nameId) {
   const table = getGroupTable(nameTyp);
   const nameRow = getNameRow(nameTyp);
   const tableRowsPoint = getTableName(nameTyp);
+  console.log(namePlot,tableRowsPoint);
+  
   // Проверяем на наличие записи БД
   const [rows] = await pool.query(
     `SELECT * FROM \`${table}\` WHERE \`${nameRow}\` = ?`,
     [namePlot]
   );
   if (rows.length === 0) {
-    return { status: "duplicate", message: "Запись нет" };
+    return { status: "duplicate" };
   }
   // Проверяем на наличие записи в ВАЖНЫХ таблицах с инфо по точкам
   const [rowsPoint] = await pool.query(
-    `SELECT * FROM \`${tableRowsPoint}\` WHERE group_name = ?`,
-    [namePlot]
+    `SELECT * FROM \`${tableRowsPoint}\` WHERE group_name = ?`,[nameId]
   );
+  
   if (rowsPoint.length > 0) {
     return { status: "connetTabl", message: " есть в таблицах о точках, удалите таблицу или точку." };
   }

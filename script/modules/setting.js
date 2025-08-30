@@ -591,7 +591,7 @@ async function loadPlotsOptions(typeJobs, nameLoad){
             delatCode.className = 'delat'+nameLoad;
             delatCode.setAttribute("title", "Delat "+nameLoad);
             delatCode.setAttribute("data-name", item.name);// имя кода
-            delatCode.setAttribute("data-id", item.name);// id кода
+            delatCode.setAttribute("data-id", item.id);// id кода
             delatCode.setAttribute("data-typ", nameLoad);// typ кода
             loadOption.appendChild(delatCode);
             document.getElementById("Level"+nameLoad).appendChild(loadOption);

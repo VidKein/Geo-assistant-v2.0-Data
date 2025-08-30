@@ -4,8 +4,9 @@ funktionalDelatPlotsOk.addEventListener("click",funktionalDelatPlots)
 async function funktionalDelatPlots() {
     let namePlot = document.querySelector("#delateNameCod").innerHTML;//name
     let nameTyp = document.querySelector("#delateNameCod").getAttribute('data-typ');//name typ
+    let nameId = document.querySelector("#delateNameCod").getAttribute('data-id');//name id
     //Контроль
-    console.log(namePlot, nameTyp);
+    //console.log(namePlot, nameTyp);    
         if (!namePlot) {
         alert("The code was entered incorrectly.");
         e.preventDefault(); // Останавливаем отправку формы
@@ -15,12 +16,12 @@ async function funktionalDelatPlots() {
              const response = await fetch(API_URL, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({namePlot, nameTyp})
+              body: JSON.stringify({namePlot, nameTyp, nameId})
              });
              const data = await response.json();
              if (response.ok) {
                if (data.status === "duplicate") {
-                 alert(`⚠️ Такая записи нет : ${namePlot}`);
+                 alert(`⚠️ Такой записи нет : ${namePlot}`);
                }else if (data.status === "connetTabl") {
                  alert(`⚠️ Такая записи : ${namePlot} ${data.message}`);
                } 
