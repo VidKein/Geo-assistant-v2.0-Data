@@ -221,6 +221,7 @@ for (let i = 0; i < settingBlock.length; i++) {
                         let place = document.querySelector("#secondSelectPoint");
                         let dataName = type.value;//имя тип точек Рабочии Базовые
                         let dataJobsPlase = place.value;//имя участка работы SOD-11/Нив Тах 
+
                         typeAndJobsPoint.innerText = type.value;
                         plasePoint.innerText = place.value;
                         
@@ -254,19 +255,10 @@ for (let i = 0; i < settingBlock.length; i++) {
                                         //Создаем новые атрибуты
                                         let type = document.querySelector("#firstSelectPoint");
                                         let place = document.querySelector("#secondSelectPoint");
-                                        if (type.value =="Base") {
                                             namePointInfo.setAttribute("data-name", type.value);//имя тип точек Базовые
                                             namePointInfo.setAttribute("data-jobs", place.value);//Тип сьемки Нив Тах
-                                            namePointInfo.removeAttribute("place");
                                             typeAndJobsPoint.innerText = type.value;
                                             plasePoint.innerText = place.value;
-                                        }else{
-                                            namePointInfo.setAttribute("data-name", type.value);//имя тип точек Рабочии...
-                                            namePointInfo.setAttribute("place", place.value);//имя участка работы SOD-11
-                                            namePointInfo.removeAttribute("data-jobs");
-                                            typeAndJobsPoint.innerText = type.value;
-                                            plasePoint.innerText = place.value;
-                                        }
                                         //Выводим информацию
                                          document.getElementById("position X").value = data.x;
                                          document.getElementById("position Y").value = data.y;
@@ -307,19 +299,10 @@ for (let i = 0; i < settingBlock.length; i++) {
                         //Создаем новые атрибуты
                         let type = document.querySelector("#firstSelectPoint");
                         let place = document.querySelector("#secondSelectPoint");
-                        if (type.value =="Base") {
                             namePointInfo.setAttribute("data-name", type.value);//имя тип точек Базовые
                             namePointInfo.setAttribute("data-jobs", place.value);//Тип сьемки Нив Тах
-                            namePointInfo.removeAttribute("place");
                             typeAndJobsPoint.innerText = type.value;
                             plasePoint.innerText = place.value;
-                        }else{
-                            namePointInfo.setAttribute("data-name", type.value);//имя тип точек Рабочии...
-                            namePointInfo.setAttribute("place", place.value);//имя участка работы SOD-11
-                            namePointInfo.removeAttribute("data-jobs");
-                            typeAndJobsPoint.innerText = type.value;
-                            plasePoint.innerText = place.value;
-                        }
                         //Закрытие изменений
                         document.querySelector("#addPoint").addEventListener("click", ()=>{
                             settingBlockFull.style.display = "block";
@@ -358,19 +341,10 @@ for (let i = 0; i < settingBlock.length; i++) {
                         //Создаем новые атрибуты
                         let type = document.querySelector("#firstSelectPoint");
                         let place = document.querySelector("#secondSelectPoint");
-                        if (type.value =="Base") {
                             span.setAttribute("data-name", type.value);//имя тип точек Базовые
                             span.setAttribute("data-jobs", place.value);//Тип сьемки Нив Тах
-                            span.removeAttribute("place");
                             typeAndJobsPointDelat.innerText = type.value;
                             plasePointDelat.innerText = place.value;
-                        }else{
-                            span.setAttribute("data-name", type.value);//имя тип точек Рабочии...
-                            span.setAttribute("place", place.value);//имя участка работы SOD-11
-                            span.removeAttribute("data-jobs");
-                            typeAndJobsPointDelat.innerText = type.value;
-                            plasePointDelat.innerText = place.value;
-                        }
                         document.querySelector(".textWindows").appendChild(textDelat);
                         textDelat.appendChild(span);
                         //Закрытие изменений

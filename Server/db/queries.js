@@ -9,8 +9,8 @@ function getTableName(type) {
 }
 
 //Получить все записи о Точках 
-//Собираем полученную информацию
-function formatRowsToJson(rows, type) {
+  //Собираем полученную информацию
+  function formatRowsToJson(rows, type) {
  const key = type === "base" ? "Base" : "poligons";
   const result = { [key]: {} };
 
@@ -27,9 +27,9 @@ function formatRowsToJson(rows, type) {
   });
 
   return result;
-}
-//Считываем с БД
-async function fetchPoints(type, lang) {
+  }
+  //Считываем с БД
+  async function fetchPoints(type, lang) {
   const table = type === "base" ? "points_Base_geo" : "points_poligons_geo";
   const groupTable = type === "base" ? "base_plots" : "poligons_plots";
 
@@ -56,16 +56,15 @@ async function fetchPoints(type, lang) {
   const params = [lang, lang];
   const [result] = await pool.query(sql, params);
   return formatRowsToJson(result, type);
-} 
-
-// объединение Base + Poligons
-async function getAllPointsCombined(lang) {
+  } 
+  // объединение Base + Poligons
+  async function getAllPointsCombined(lang) {
   const base = await fetchPoints("base", lang);
   const poligons = await fetchPoints("poligons", lang);
   return { ...base, ...poligons };
-}
+  }
 
-// Получить одну запись
+//Получить одну запись
 async function getPointById(type, id, groupName) {
   console.log(type, id, groupName);
   
@@ -92,19 +91,69 @@ async function getPointById(type, id, groupName) {
       DATE_FORMAT(p.date, '%Y-%m-%d') AS date,
       p.systemCoordinates_id,
       p.positionType_id,
-      ${joinField}.${groupField} AS group_name,   -- название группы
-      ${joinField}.${idField} AS group_id         -- числовой ID группы
+      ${joinField}.${groupField} AS group_name,   
+      ${joinField}.${idField} AS group_id         
     FROM ${table} p
     JOIN ${groupTable} ${joinField} ON p.group_name = ${joinField}.${idField}
     WHERE p.point_id = ? AND ${joinField}.${groupField} = ?;
   `, [id, groupName]);
-
   // Если нашли — возвращаем объект, если нет — null
   return result.length > 0 ? result[0] : null;
 }
 
-/*КОДЫ*/
+//addDat
+async function postAddDat(fullInfo) {
+  console.log( fullInfo.dataJobs, fullInfo.dataName, fullInfo.id, fullInfo.positionX, fullInfo.positionY, fullInfo.vyckaPoint, fullInfo.date, fullInfo.coordinateSystem, fullInfo.positionType);
+let point_id = fullInfo.id, 
+    groupName = fullInfo.dataJobs, 
+    x = fullInfo.positionX, 
+    y = fullInfo.positionY,
+    vycka = fullInfo.vyckaPoint, 
+    date = fullInfo.date, 
+    systemCoord = fullInfo.coordinateSystem, 
+    posType = fullInfo.positionType;
+try {
+    //Получаем ID группы (ищем в base_plots и poligons_plots)
+    let [rows] = await pool.query(
+      `SELECT base_id as id FROM base_plots WHERE name_base = ? 
+       UNION 
+       SELECT poligons_id as id FROM poligons_plots WHERE name_poligons = ?`,
+      [groupName, groupName]
+    );
+    if (rows.length === 0) throw new Error("Группа не найдена: " + groupName);
+    const groupId = rows[0].id;
 
+    //Вставляем новую точку
+    const [result] = await pool.query(
+      `INSERT INTO points_Base_geo 
+        (point_id, group_name, x, y, vycka, date, systemCoordinates_id, positionType_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [point_id, groupId, x, y, vycka, date, systemCoord, posType]
+    );
+
+
+    return { status: "success", id: point_id , groupName: fullInfo.dataName, type: groupName };
+
+  } catch (err) {
+    console.error("Ошибка при добавлении точки:", err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+//editDat
+async function postEditDat(fullInfo) {
+  console.log( fullInfo.dataJobs, fullInfo.dataName, fullInfo.id, fullInfo.positionX, fullInfo.positionY, fullInfo.vyckaPoint, fullInfo.date, fullInfo.coordinateSystem, fullInfo.positionType);
+
+}
+
+//delatDat
+async function postDelatDat(dataName, dataJobs, id) {
+  console.log(dataName, dataJobs, id);
+  
+}
+
+
+/*КОДЫ*/
 //Получение информации по коду вида точек и системы координат
 async function getKodLoad(lang) {
   const [result] = await pool.query(`
@@ -224,7 +273,6 @@ async function postNewCod(eng, ua, cz, nameTyp, siteLanguage) {
   return { status: "success", eng: eng, ua: ua , cz: cz };
 }
 
-
 //Удаление Кода
 async function postDelatCod(idCod, nameCod, nameTyp) {
   console.log(idCod);
@@ -291,6 +339,9 @@ module.exports = {
   postNewPlot,
   postNewCod,
   postDelatCod,
+  postAddDat,
+  postEditDat,
+  postDelatDat,
   addPoint,
   updatePoint,
   deletePoint,

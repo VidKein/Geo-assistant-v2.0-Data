@@ -14,6 +14,42 @@ app.use(cors()); // Разрешаем CORS для всех источников
 //Отдаём фронтенд (папку public)
 app.use(express.static("public"));
 
+/*Подгрузка Календаря */
+// Путь к файлу
+const UPLOAD_FOLDER = path.join(__dirname, '..','xlsx')
+// Загрузка файла
+// Настройка Multer (файл загружается в память)
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        if (
+            file.originalname !== 'Jobs_kalendar.xlsx' || 
+            file.mimetype !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ) {
+            return cb(new Error('Error: Only allowed to upload Jobs_kalendar.xlsx!'), false);
+        }
+        cb(null, true);
+    }
+});
+
+// Маршрут для загрузки файла
+app.post('/uploadFile', (req, res) => {
+    upload.single('file')(req, res, (err) => {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        if (!req.file) {
+            return res.status(400).json({ error: 'Error: File not loaded!' });
+        }
+        const filePath = path.join(UPLOAD_FOLDER, 'Jobs_kalendar.xlsx');
+        fs.writeFile(filePath, req.file.buffer, (err) => {
+            if (err) {return res.status(500).json({ error: 'Error saving file!' });}
+            res.json({ message: 'File uploaded successfully!' });
+        });
+    });
+});
+
 /*ТОЧКИ*/
 //Считываем и передаем инфррмацию о Всех точках planning-work.js
 app.get("/all_points", async (req, res) => {
@@ -40,6 +76,40 @@ app.get('/pointDat/:dataName/:dataJobsPlase/:id', async (req, res) => {
     console.error("Ошибка в /pointDat:", err);
     res.status(500).json({ status: "error", message: "Ошибка сервера" });
     }
+});
+//add point
+// Добавление данных
+app.post('/addDat',  async  (req, res) => { 
+  try {
+    const data = await queries.postAddDat(req.body);
+    res.json(data);
+  } catch (err) {
+    console.error("Ошибка в /newPlot:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+//edit point
+//Редоктирование
+app.post('/editDat', async (req, res) => {  
+  try {
+    const data = await queries.postEditDat(req.body);
+    res.json(data);
+  } catch (err) {
+    console.error("Ошибка в /newPlot:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});  
+//delat point
+// Удаление данных
+app.post('/delatDat',  async (req, res) => {
+  const {dataName, dataJobs, id} = req.body;  
+  try {
+    const data = await queries.postDelatDat(dataName, dataJobs, id);
+    res.json(data);
+  } catch (err) {
+    console.error("Ошибка в /newPlot:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
 });
 /*КОДЫ*/
 //Считываем и передаем инфррмацию о коде точек и СК main.js
@@ -100,166 +170,10 @@ app.post('/delatCod', async (req, res) => {
     res.status(500).json({ status: "error", message: "Ошибка сервера" });
   }
 });
+/*Экспорт/Импорт*/
 
 
-// Путь к файлу
-//File
-const UPLOAD_FOLDER = path.join(__dirname, '..','xlsx');;
 
-//Редоктирование/чтение данных
-
-//Редоктирование
-app.post('/editDat', (req, res) => {  
-  const {dataPlace, dataName, dataJobs, id, positionX, positionY, vyckaPoint, date, coordinateSystem, positionType } = req.body;     
-  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
-      if (err) {
-          return res.status(500).json({ error: 'Error reading data.' });
-      } else {
-          const jsonData = JSON.parse(data);
-          if (jsonData[id]) {return res.status(400).json({ error: 'An element with this ID already exists.' });}
-          //Собираем в массив 
-          if (dataName == "poligons") { 
-              jsonData[dataName][dataPlace][id] = {
-                  position: [Number(positionX),Number(positionY)],
-                  vycka: Number(vyckaPoint),
-                  date:date,
-                  systemCoordinates: coordinateSystem,
-                  positionType: positionType
-                };
-          }
-          if (dataName == "Base")  {
-              jsonData[dataName][dataJobs][id] = {
-                  position: [Number(positionX),Number(positionY)],
-                  vycka: Number(vyckaPoint),
-                  date:date,
-                  systemCoordinates: coordinateSystem,
-                  positionType: positionType
-                };
-          }
-          //Вносим иформацию в файл
-          fs.writeFile(DATA_FILE, JSON.stringify(jsonData, null, "\t"), (err) => {
-              if (err) {
-                console.error('JSON write error: ', err);
-                return res.status(500).json({ error: 'Error writing JSON file.' });
-              }
-              res.json({ success: true, message: `Point data ${id} edited.` });
-          });
-      }
-  });
-});
-
-// Добавление данных
-app.post('/addDat', (req, res) => { 
-    const {dataPlace, dataName, dataJobs, id, positionX, positionY, vyckaPoint, date, coordinateSystem, positionType } = req.body;     
-    fs.readFile(DATA_FILE, 'utf8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ error: 'Error reading data.' });
-        } else {
-            const jsonData = JSON.parse(data);
-            if (jsonData[id]) {return res.status(400).json({ error: 'An element with this ID already exists.' });}
-            //Собираем в массив 
-            if (dataName == "poligons") { 
-                jsonData[dataName][dataPlace][id] = {
-                    position: [Number(positionX),Number(positionY)],
-                    vycka: Number(vyckaPoint),
-                    date:date,
-                    systemCoordinates: coordinateSystem,
-                    positionType: positionType
-                  };
-            }
-            if (dataName == "Base")  {
-                jsonData[dataName][dataJobs][id] = {
-                    position: [Number(positionX),Number(positionY)],
-                    vycka: Number(vyckaPoint),
-                    date:date,
-                    systemCoordinates: coordinateSystem,
-                    positionType: positionType
-                  };
-            }
-            //Вносим иформацию в файл
-            fs.writeFile(DATA_FILE, JSON.stringify(jsonData, null, "\t"), (err) => {
-                if (err) {
-                  console.error('JSON write error:', err);
-                  return res.status(500).json({ error: 'Error writing JSON file.' });
-                }
-                res.json({ success: true, message: `Point data ${id} added.` });
-            });
-        }
-    });
-});
-
-// Удаление данных
-app.post('/delatDat', (req, res) => {
-  const {dataPlace, dataName, dataJobs, id} = req.body;   
-  //Считываем файл  
-  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
-    if (err) {
-      console.error('Error reading JSON:', err);
-      return res.status(500).json({ error: 'Error reading JSON file.' });
-    }
-    //Парсим файл 
-    let jsonData = JSON.parse(data);// Преобразуем JSON в объект
-    //Base
-    if (dataJobs !== null) {
-      if (!jsonData[dataName][dataJobs][id]) {
-        return res.status(404).json({ error: 'Item not found.' });
-      }
-      //Удаляем элемент
-      delete jsonData[dataName][dataJobs][id]; // Удаляем элемент по ID
-    }
-    //poligons
-    if (dataPlace !== null) {
-      if (!jsonData[dataName][dataPlace][id]) {
-        return res.status(404).json({ error: 'Item not found.' });
-      }
-      //Удаляем элемент
-      delete jsonData[dataName][dataPlace][id]; // Удаляем элемент по ID
-    }
-    
-    //Перезаписываем файл
-    fs.writeFile(DATA_FILE, JSON.stringify(jsonData, null, 2), (err) => {
-      if (err) {
-        console.error('JSON write error:', err);
-        return res.status(500).json({ error: 'Error writing JSON file.' });
-      }
-      res.json({ success: true, message: `Data for ID ${id} has been removed.` });
-    });
-
-  });
-});
-
-// Загрузка файла
-// Настройка Multer (файл загружается в память)
-const storage = multer.memoryStorage();
-const upload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        if (
-            file.originalname !== 'Jobs_kalendar.xlsx' || 
-            file.mimetype !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ) {
-            return cb(new Error('Error: Only allowed to upload Jobs_kalendar.xlsx!'), false);
-        }
-        cb(null, true);
-    }
-});
-
-// Маршрут для загрузки файла
-app.post('/uploadFile', (req, res) => {
-    upload.single('file')(req, res, (err) => {
-        if (err) {
-            return res.status(400).json({ error: err.message });
-        }
-        if (!req.file) {
-            return res.status(400).json({ error: 'Error: File not loaded!' });
-        }
-        const filePath = path.join(UPLOAD_FOLDER, 'Jobs_kalendar.xlsx');
-        fs.writeFile(filePath, req.file.buffer, (err) => {
-            if (err) {return res.status(500).json({ error: 'Error saving file!' });}
-            res.json({ message: 'File uploaded successfully!' });
-        });
-    });
-});
 
 //Импорт списка точек
 const uploadImport = multer({ storage: multer.memoryStorage() }); // Храним в памяти

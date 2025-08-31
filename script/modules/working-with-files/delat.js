@@ -2,7 +2,6 @@
 let funktionalDelatOk = document.querySelector("#funktionalDelat");
 funktionalDelatOk.addEventListener("click",funktionalDelat)
 async function funktionalDelat() {
-    let dataPlace = document.querySelector("#delateNamePoin").getAttribute('place');//имя участка работы SOD-11
     let dataName = document.querySelector("#delateNamePoin").getAttribute('data-name');//имя тип точек Рабочии Базовые
     let dataJobs = document.querySelector("#delateNamePoin").getAttribute('data-jobs');//Тип сьемки Нив Тах
     let id = document.querySelector("#delateNamePoin").textContent;
@@ -16,7 +15,7 @@ async function funktionalDelat() {
     const response = await fetch(API_URL, {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({dataPlace, dataName, dataJobs, id})
+         body: JSON.stringify({dataName, dataJobs, id})
     });
     const result = await response.json();
     alert(result.message || result.error);    

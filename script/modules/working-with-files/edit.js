@@ -2,9 +2,9 @@ let add = [];
 let funktionalAddEdit = document.querySelector("#funktionalEdit");
 funktionalAddEdit.addEventListener("click",funktionalEdit)
 async function funktionalEdit(e) {
-    let dataPlace = document.querySelector(".namePoint").getAttribute('place'); //имя участка работы SOD-11
-    let dataName = document.querySelector(".namePoint").getAttribute('data-name');//имя тип точек Рабочии Базовые
+    let dataName = document.querySelector(".namePoint").getAttribute('data-name');//имя тип точек Рабочии Базовые 
     let dataJobs = document.querySelector(".namePoint").getAttribute('data-jobs');//Тип сьемки Нив Тах
+    
     let id = document.querySelector(".namePoint").textContent;
     let positionX = document.getElementById("position X").value.trim();
     let positionY = document.getElementById("position Y").value.trim();
@@ -29,7 +29,7 @@ async function funktionalEdit(e) {
     const response = await fetch(API_URL, {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({dataPlace, dataName, dataJobs, id, positionX, positionY, vyckaPoint, date, coordinateSystem, positionType})
+         body: JSON.stringify({dataName, dataJobs, id, positionX, positionY, vyckaPoint, date, coordinateSystem, positionType})
     });
     const result = await response.json();
     alert(result.message || result.error);
