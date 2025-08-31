@@ -162,6 +162,7 @@ for (let i = 0; i < settingBlock.length; i++) {
                 document.querySelector("#infoWindows").style.display = "block";
                 //Создание блока
                 let textDelat = document.createElement('p');
+                textDelat.style.textAlign = "center";
                 textDelat.innerText = langsInfoSetting[siteLanguage].newPlots+e.target.getAttribute('data-typ');
                 let input = document.createElement('input');
                 input.id = "nameCod";
@@ -186,6 +187,7 @@ for (let i = 0; i < settingBlock.length; i++) {
                 document.querySelector("#infoWindows").style.display = "block";
                 //Создание блока
                 let textDelat = document.createElement('p');
+                textDelat.style.textAlign = "center";
                 textDelat.innerText = langsInfoSetting[siteLanguage].deladCod;
                 let span = document.createElement('span');
                 span.style = "color:red";
@@ -338,6 +340,7 @@ for (let i = 0; i < settingBlock.length; i++) {
                         document.querySelector("#infoWindows").style.display = "block";
                         //Создание блока
                         let textDelat = document.createElement('p');
+                        textDelat.style.textAlign = "center";
                         textDelat.innerText = langsInfoSetting[siteLanguage].deladCod;
                         let span = document.createElement('span');
                         span.style = "color:red";
@@ -395,6 +398,7 @@ for (let i = 0; i < settingBlock.length; i++) {
                 if (langInfo !== "") {
                     //Создание блока
                     let textDelat = document.createElement('p');
+                    textDelat.style.textAlign = "center";
                     textDelat.innerText = langsInfoSetting[siteLanguage].newCod+e.target.getAttribute('data-typ')+` - ${langInfo} `;
                     let input = document.createElement('input');
                     input.id = langInfo;//  надпись на языке - typ кода
@@ -421,6 +425,7 @@ for (let i = 0; i < settingBlock.length; i++) {
               document.querySelector("#infoWindows").style.display = "block";
               //Создание блока
               let textDelat = document.createElement('p');
+              textDelat.style.textAlign = "center";
               textDelat.innerText = langsInfoSetting[siteLanguage].deladCod;
               let span = document.createElement('span');
               span.style = "color:red";
