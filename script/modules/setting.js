@@ -1,8 +1,7 @@
 //Передача информации о Системе координат и типах точек из main.js
-//Edit
 window.jsonData = {};
 function waitForData() {
-  if (window.pointsData) {    
+  if (window.pointsData) {
     //Система коорднат-Типы расположения точек
     const kodCoordinateSystem = window.pointsData.codes.slice(0, window.pointsData.count_SC.count_rows);
     loadCodesOptions(kodCoordinateSystem, "coordinateSystem");
@@ -389,23 +388,30 @@ for (let i = 0; i < settingBlock.length; i++) {
               //Открываем окно
               settingBlockFull.style.display = "none";
               document.querySelector("#infoWindows").style.display = "block";
-              //Создание блока
-              let textDelat = document.createElement('p');
-              textDelat.innerText = langsInfoSetting[siteLanguage].newCod+e.target.getAttribute('data-typ');
-              let input = document.createElement('input');
-              input.id = "nameCod";
-              input.type = "text";
-              input.setAttribute("data-typ", e.target.getAttribute('data-typ'));// typ кода
-              document.querySelector(".textWindows").appendChild(textDelat);  
-              textDelat.appendChild(input);  
-              //Закрытие изменений
-              document.querySelector(".close-infoWindows").addEventListener("click", ()=>{
-                //Удаление блока
-                textDelat.remove();
-                settingBlockFull.style.display = "block";
-                document.querySelector("#infoWindows").style.display = "none";
-                document.querySelector("#funktionalNewCod").style.display = "none";
-              });
+
+            let lang = document.querySelector("#lang")
+              for (let i = 0; i < lang.length; i++) {
+                let langInfo = document.querySelector("#lang")[i].value;
+                if (langInfo !== "") {
+                    //Создание блока
+                    let textDelat = document.createElement('p');
+                    textDelat.innerText = langsInfoSetting[siteLanguage].newCod+e.target.getAttribute('data-typ')+` - ${langInfo} `;
+                    let input = document.createElement('input');
+                    input.id = langInfo;//  надпись на языке - typ кода
+                    input.type = "text";
+                    input.setAttribute("data-typ", e.target.getAttribute('data-typ'));// typ кода
+                    document.querySelector(".textWindows").appendChild(textDelat);  
+                    textDelat.appendChild(input); 
+                    //Закрытие изменений
+                    document.querySelector(".close-infoWindows").addEventListener("click", ()=>{
+                      //Удаление блока
+                      textDelat.remove();
+                      settingBlockFull.style.display = "block";
+                      document.querySelector("#infoWindows").style.display = "none";
+                      document.querySelector("#funktionalNewCod").style.display = "none";
+                    });
+                }     
+            } 
             }
             //Удаляем coordinateSystem/positionType
             if (e.target.className == "delatCodecoordinateSystem" || e.target.className == "delatCodepositionType") {
@@ -538,10 +544,15 @@ document.getElementById('clearSettings').addEventListener('click', () => {
 //Заполнение блока Система коорднат-Типы расположения точек
 async function loadCodesOptions(jsonData, nameLoad) {
     //Заполняем количество
+    // считаем только непустые
+    const count = Object.values(jsonData).filter(v =>
+      v.name !== "" && v.name !== null && v.name !== undefined &&
+      !(typeof v === "object" && Object.keys(v).length === 0)
+    ).length;
     if (nameLoad == "coordinateSystem") {
-      document.getElementById("leveling"+nameLoad).textContent = " - "+jsonData.length;
+      document.getElementById("leveling"+nameLoad).textContent = " - "+count;
     }else{
-      document.getElementById("leveling"+nameLoad).textContent = " - "+jsonData.length;
+      document.getElementById("leveling"+nameLoad).textContent = " - "+count;
     }
     // Создаем новый div для новых классов
     const loadCodesOptions = document.createElement('div');
@@ -554,18 +565,20 @@ async function loadCodesOptions(jsonData, nameLoad) {
     loadCodesOptions.setAttribute("data-typ", nameLoad);// typ кода
     document.getElementById("Level"+nameLoad).appendChild(loadCodesOptions);
         for (const item of jsonData) {
-            // Создаем новый div заполнения
-            const loadOption = document.createElement('div');
-            loadOption.className = nameLoad; // Добавляем класс
-            loadOption.textContent = item.name; // Устанавливаем текст внутри div
-            let delatCode = document.createElement('div');
-            delatCode.className = 'delatCode'+nameLoad;
-            delatCode.setAttribute("title", "Delat code");
-            delatCode.setAttribute("data-name", item.name);// имя кода
-            delatCode.setAttribute("data-id", item.id);// id кода
-            delatCode.setAttribute("data-typ", nameLoad);// typ кода
-            loadOption.appendChild(delatCode);
-            document.getElementById("Level"+nameLoad).appendChild(loadOption);
+            if (item.name !== "") {
+                // Создаем новый div заполнения
+                const loadOption = document.createElement('div');
+                loadOption.className = nameLoad; // Добавляем класс
+                loadOption.textContent = item.name; // Устанавливаем текст внутри div
+                let delatCode = document.createElement('div');
+                delatCode.className = 'delatCode'+nameLoad;
+                delatCode.setAttribute("title", "Delat code");
+                delatCode.setAttribute("data-name", item.name);// имя кода
+                delatCode.setAttribute("data-id", item.id);// id кода
+                delatCode.setAttribute("data-typ", nameLoad);// typ кода
+                loadOption.appendChild(delatCode);
+                document.getElementById("Level"+nameLoad).appendChild(loadOption);
+            }
         }
 }
 //Заполнение блока Участка - место работы

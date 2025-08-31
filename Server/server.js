@@ -80,9 +80,9 @@ app.post('/newPlot', async (req, res) => {
 
 //Добавление Cod
 app.post('/newCod', async (req, res) => {
-  const {nameCod, nameTyp, siteLanguage} = req.body;
+  const {eng, ua, cz , nameTyp, siteLanguage} = req.body;
   try{
-  const data = await queries.postNewCod(nameCod, nameTyp, siteLanguage);
+  const data = await queries.postNewCod(eng, ua, cz, nameTyp, siteLanguage);
   res.json(data);
   } catch (err) {
     console.error("Ошибка в /newCod:", err);
@@ -91,9 +91,9 @@ app.post('/newCod', async (req, res) => {
 });
 //Удаление Cod
 app.post('/delatCod', async (req, res) => {
-  const {idCod, nameCod, nameTyp, siteLanguage} = req.body;
+  const {idCod, nameCod, nameTyp} = req.body;
   try{
-  const data = await queries.postDelatCod(nameCod, nameTyp, siteLanguage);
+  const data = await queries.postDelatCod(idCod, nameCod, nameTyp);
   res.json(data);
   } catch (err) {
     console.error("Ошибка в /delatCod:", err);

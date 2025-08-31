@@ -12,21 +12,33 @@ async function funktionalDelatCod(e) {
         alert("The code was entered incorrectly.");
         e.preventDefault(); // Останавливаем отправку формы
         } else {
+        try {
         const API_URL = `http://localhost:4000/delatCod`;
         const response = await fetch(API_URL, {
              method: 'POST',
              headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify({idCod, nameCod, nameTyp, siteLanguage})
+             body: JSON.stringify({idCod, nameCod, nameTyp})
         });
-        const result = await response.json();
-        alert(result.message || result.error);    
-        // Перезагрузка страницы
-        location.reload();
-        //Удаление блока
-        document.getSelection(".textWindows").remove();
-        //обнуление
-        document.querySelector("#infoWindows").style.display = "none";
-        }
-    
+             const data = await response.json();
+             if (response.ok) {
+               if (data.status === "duplicate") {
+                 alert(`⚠️ Такой записи нет : ${namePlot}`);
+               }else if (data.status === "success") {
+                 alert(`✅ Код ${nameCod} из ${nameTyp} удален !`);
+                 // Перезагрузка страницы
+                 location.reload();
+               }
+             } else {
+               alert(`❌ Ошибка: ${data.message}`);
+             }
+         } catch (err) {
+           alert("❌ Ошибка соединения с сервером!");
+           console.error(err);
+         }
+         //Удаление блока
+         document.getSelection(".textWindows").remove();
+         //обнуление
+         document.querySelector("#infoWindows").style.display = "none";
+        } 
 }    
 

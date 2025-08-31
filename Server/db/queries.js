@@ -1,7 +1,7 @@
 const pool = require("./connection");
 
 /*ТОЧКИ*/
-//Вспомогательная функция выбора таблицы
+//Вспомогательная функция выбора таблицы BASE/POLIGONS
 function getTableName(type) {
   if (type === "Base") return "points_Base_geo";
   if (type === "poligons") return "points_poligons_geo";
@@ -130,7 +130,7 @@ async function getKodLoad(lang) {
       };
 }
 
-//Вспомогательная функция выбора таблицы
+//Вспомогательная функция выбора таблицы PLOTS BASE/POLIGONS
 function getGroupTable(type) {
   if (type === "Base") return "base_plots";
   if (type === "poligons") return "poligons_plots";
@@ -144,62 +144,112 @@ function getNameRow(type) {
 
 //Добавление Места расположения
 async function postNewPlot(namePlot, nameTyp) {
-  const table = getGroupTable(nameTyp);
-  const nameRow = getNameRow(nameTyp);
+     const table = getGroupTable(nameTyp);
+     const nameRow = getNameRow(nameTyp);   
 
-  // Проверяем, есть ли уже такая запись
-  const [rows] = await pool.query(
-    `SELECT * FROM \`${table}\` WHERE \`${nameRow}\` = ?`,
-    [namePlot]
-  );
-  if (rows.length > 0) {
-    return { status: "duplicate", message: "Запись уже существует" };
-  }
-    // Добавляем новую запись
-  const [result] = await pool.query(
-    `INSERT INTO \`${table}\` (\`${nameRow}\`) VALUES (?)`,
-    [namePlot]
-  );
-  return { status: "success", id: namePlot };
+     // Проверяем, есть ли уже такая запись
+     const [rows] = await pool.query(
+       `SELECT * FROM \`${table}\` WHERE \`${nameRow}\` = ?`,
+       [namePlot]
+     );
+     if (rows.length > 0) {
+       return { status: "duplicate", message: "Запись уже существует" };
+     }
+       // Добавляем новую запись
+     const [result] = await pool.query(
+       `INSERT INTO \`${table}\` (\`${nameRow}\`) VALUES (?)`,
+       [namePlot]
+     );
+     return { status: "success", id: namePlot };
 }
 //Удаление Места расположения
 async function postDelatPlot(namePlot, nameTyp, nameId) {
-  const table = getGroupTable(nameTyp);
-  const nameRow = getNameRow(nameTyp);
-  const tableRowsPoint = getTableName(nameTyp);
-  console.log(namePlot,tableRowsPoint);
-  
-  // Проверяем на наличие записи БД
-  const [rows] = await pool.query(
-    `SELECT * FROM \`${table}\` WHERE \`${nameRow}\` = ?`,
-    [namePlot]
-  );
-  if (rows.length === 0) {
-    return { status: "duplicate" };
-  }
-  // Проверяем на наличие записи в ВАЖНЫХ таблицах с инфо по точкам
-  const [rowsPoint] = await pool.query(
-    `SELECT * FROM \`${tableRowsPoint}\` WHERE group_name = ?`,[nameId]
-  );
-  
-  if (rowsPoint.length > 0) {
-    return { status: "connetTabl", message: " есть в таблицах о точках, удалите таблицу или точку." };
-  }
-  //Удаляем запись
-  const [result] = await pool.query(
-      `DELETE FROM \`${table}\` WHERE \`${table}\`.\`${nameRow}\` = ?`,[namePlot]
-     );
-  return { status: "success", id: namePlot };
-}
+    const table = getGroupTable(nameTyp);
+    const nameRow = getNameRow(nameTyp);
+    const tableRowsPoint = getTableName(nameTyp);
+    console.log(namePlot,tableRowsPoint);
 
+    // Проверяем на наличие записи БД
+    const [rows] = await pool.query(
+      `SELECT * FROM \`${table}\` WHERE \`${nameRow}\` = ?`,
+      [namePlot]
+    );
+    if (rows.length === 0) {
+      return { status: "duplicate" };
+    }
+    // Проверяем на наличие записи в ВАЖНЫХ таблицах с инфо по точкам
+    const [rowsPoint] = await pool.query(
+      `SELECT * FROM \`${tableRowsPoint}\` WHERE group_name = ?`,[nameId]
+    );
+
+    if (rowsPoint.length > 0) {
+      return { status: "connetTabl", message: " есть в таблицах о точках, удалите таблицу или точку." };
+    }
+    //Удаляем запись
+    const [result] = await pool.query(
+        `DELETE FROM \`${table}\` WHERE \`${table}\`.\`${nameRow}\` = ?`,[namePlot]
+       );
+    return { status: "success", id: namePlot };
+}
+//Вспомогательная функция выбора таблицы KOD SC/TYPE
+function getGroupTable(type) {
+  if (type === "Base") return "base_plots";
+  if (type === "poligons") return "poligons_plots";
+  throw new Error("Неверный тип таблицы");
+}
+function getIdType(type) {
+  if (type === "coordinateSystem") return 1;
+  if (type === "positionType") return 2;
+  throw new Error("Неверный тип таблицы");
+}
 //Добавление Кода
-async function postNewCod(nameCod, nameTyp, siteLanguage) {
-  console.log(nameCod, nameTyp, siteLanguage);
+async function postNewCod(eng, ua, cz, nameTyp, siteLanguage) {
+  const type = getIdType(nameTyp); // получаем id типа
+  console.log(eng, ua, cz, type, siteLanguage);
+  
+  // 1. Создаём запись в codes
+  const [codeResult] = await pool.query(
+    `INSERT INTO codes (code_type_id) VALUES (?)`,
+    [type]
+  );
+  const codeId = codeResult.insertId;
 
+  // 2. Переводы (одним INSERT с несколькими VALUES)
+  const [result] = await pool.query(
+    `INSERT INTO code_translations (code_id, lang, value) 
+     VALUES (?, 'eng', ?), (?, 'cz', ?), (?, 'ua', ?)`,
+    [codeId, eng, codeId, cz, codeId, ua]
+  );
+
+  return { status: "success", eng: eng, ua: ua , cz: cz };
 }
+
+
 //Удаление Кода
-async function postDelatCod(nameCod, nameTyp, siteLanguage) {
-  console.log(nameCod, nameTyp, siteLanguage);
+async function postDelatCod(idCod, nameCod, nameTyp) {
+  console.log(idCod);
+ // Проверяем на наличие записи БД
+    const [rows] = await pool.query(
+      `SELECT * FROM code_translations WHERE code_id = ?`,
+      [idCod]
+    );
+    if (rows.length === 0) {
+      return { status: "duplicate" };
+    }
+
+  // Удаляем переводы
+  await pool.query(
+    `DELETE FROM code_translations WHERE code_id = ?`,
+    [idCod]
+  );
+
+  //Удаляем сам код
+  const [result] = await pool.query(
+    `DELETE FROM codes WHERE id = ?`,
+    [idCod]
+  );
+
+  return { status: "success", nameCod : nameCod, nameTyp :nameTyp}
 
 }
 
