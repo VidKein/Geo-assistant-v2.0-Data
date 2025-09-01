@@ -5754,7 +5754,7 @@
 //Определение языка
 const siteLanguage = localStorage.getItem('siteLanguage') || "eng";
 // Задаем URL PDF-файла, расположенного в папке help на сервере
-const pdfUrl = '/Geo-assistant-v1.0/help/help_geo_asistent_'+siteLanguage+'.pdf';
+const pdfUrl = './help/help_geo_asistent_'+siteLanguage+'.pdf';
 // Создание ссылки для открытия PDF
 const pdfLink = `<a href="${pdfUrl}" target="_blank" id="helpGeo" title="Help Geo Asistent">Help</a>`;
 
