@@ -9,9 +9,10 @@
 CREATE TABLE `users_geo` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(255) UNIQUE NOT NULL,
+  email_username VARCHAR(255) NOT NULL,
   password_username VARCHAR(255) NOT NULL
 );
-
+INSERT INTO users_geo (username, email_username, password_username) VALUES ('admin', 'a5b4bfe7a087861bd36f51452d11fddb313918dc4c98125b78931bdb7053201c', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f');
 -- --------------------------------------------------------
 --
 -- Структура таблицы храняшие названия участков

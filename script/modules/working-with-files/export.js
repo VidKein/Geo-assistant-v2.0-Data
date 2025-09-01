@@ -8,7 +8,7 @@ async function importLispPoint(e) {
     //console.log(type,place);
     try{
         if (!type || !place || !tapeFain) {
-             e.preventDefault(); // Останавливаем отправку формы
+        e.preventDefault(); // Останавливаем отправку формы
         }else{
         const API_URL = 'http://localhost:4000/exportLispPoint';
         const response = await fetch(API_URL, {
@@ -17,10 +17,13 @@ async function importLispPoint(e) {
              body: JSON.stringify({type, place, tapeFain})
         });
 
-        if (!response.ok) throw new Error('Ошибка сервера');
-
+        if (!response.ok) {
+            alert("❌ Ошибка экспорта данных!");
+            return;
+        }
+        // 📂 Получаем файл и качаем
         const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
+        const url = window.URL.createObjectURL(blob);
 
         const a = document.createElement('a');
         a.href = url;
@@ -28,13 +31,15 @@ async function importLispPoint(e) {
         document.body.appendChild(a);
         a.click();
         a.remove();
-        URL.revokeObjectURL(url);
-
-        //Уведомление
-        alert(`Information from  - ${type}/${place} transfer to file ${place}${tapeFain}.`);
-
+        window.URL.revokeObjectURL(url);
         // Перезагрузка страницы
         location.reload();
+
+        //Уведомление
+        alert(`✅ Экспорт завершён!\nФайл: ${place}${tapeFain}`);
         }
-    } catch (error) {alert('Error: ' + error.message);}
+    } catch (err) {
+      alert("❌ Ошибка соединения с сервером!");
+      console.error(err);
+    }
 }

@@ -9,10 +9,10 @@ function getTableName(type) {
 }
 
 //Получить все записи о Точках 
-  //Собираем полученную информацию
-  function formatRowsToJson(rows, type) {
+//Собираем полученную информацию
+function formatRowsToJson(rows, type) {
  const key = type === "base" ? "Base" : "poligons";
-  const result = { [key]: {} };
+ const result = { [key]: {} };
 
   rows.forEach(r => {
     if (!result[key][r.group_name]) {result[key][r.group_name] = {};}
@@ -42,7 +42,7 @@ function getTableName(type) {
       p.point_id,
       b.${nameColumn} AS group_name,
       p.x, p.y, p.vycka, 
-      DATE_FORMAT(p.date, '%Y-%m-%d') AS date,
+      DATE_FORMAT(date, '%Y-%m-%d'),
       ct1.value AS coordinate_system,
       ct2.value AS position_type
     FROM ${table} p
@@ -384,35 +384,117 @@ async function postDelatCod(idCod, nameCod, nameTyp) {
 }
 
 /*ЭКСПОРТ/ИМПОРТ*/
-
-// 🔹 Добавить
-async function addPoint(type, point) {
+//ИМПОРТ
+async function postImportPoint(type, place, dataPoint) {
   const table = getTableName(type);
-  const { point_id, group_name, x, y, vycka, date, systemCoordinates_id, positionType_id } = point;
-  await pool.query(
-    `INSERT INTO ${table} (point_id, group_name, x, y, vycka, date, systemCoordinates_id, positionType_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [point_id, group_name, x, y, vycka, date, systemCoordinates_id, positionType_id]
+
+  try {
+    // Получаем ID группы
+    let [rowsGrup] = await pool.query(
+      `SELECT base_id AS id FROM base_plots WHERE name_base = ? 
+       UNION 
+       SELECT poligons_id AS id FROM poligons_plots WHERE name_poligons = ?`,
+      [place, place]
+    );
+
+    if (rowsGrup.length === 0) {
+      throw new Error("Группа не найдена: " + place);
+    }
+
+    const groupId = rowsGrup[0].id;
+
+    // Всего точек в файле
+    const totalPoints = dataPoint.length;
+
+    // 🔎 Проверяем все point_id на дубли
+    const ids = dataPoint.map(p => p.point_id);
+    const [dupRows] = await pool.query(
+      `SELECT point_id FROM ${table} 
+       WHERE group_name = ? AND point_id IN (${ids.map(() => "?").join(",")})`,
+      [groupId, ...ids]
+    );
+
+    if (dupRows.length > 0) {
+      const dupList = dupRows.map(r => r.point_id).join(", ");
+      return { 
+        status: false, 
+        error: `Импорт отменён. Дубликаты точек: ${dupList}`,
+        total: totalPoints,
+        added: 0
+      };
+    }
+
+    // 🚀 Если дубликатов нет — вставляем все точки
+    let addedPoints = [];
+    for (let item of dataPoint) {
+      await pool.execute(
+        `INSERT INTO ${table} 
+         (point_id, group_name, x, y, vycka, date, systemCoordinates_id, positionType_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          item.point_id,
+          groupId,
+          item.x,
+          item.y,
+          item.vycka,
+          item.date,
+          item.systemCoordinates_id,
+          item.positionType_id
+        ]
+      );
+      addedPoints.push(item.point_id);
+    }
+
+    return { 
+      status: true, 
+      message: "Импорт успешно завершён", 
+      total: totalPoints,
+      added: addedPoints.length,
+      addedPoints
+    };
+
+  } catch (err) {
+    console.error("Ошибка при импорте точек:", err.message);
+    return { status: false, error: err.message };
+  }
+}
+
+//ЭКСПОРТ
+async function postExportPoint(type, place) {
+  const table = getTableName(type);
+  console.log(table, place);
+
+  // Получаем ID группы
+    let [rowsGrup] = await pool.query(
+      `SELECT base_id AS id FROM base_plots WHERE name_base = ? 
+       UNION 
+       SELECT poligons_id AS id FROM poligons_plots WHERE name_poligons = ?`,
+      [place, place]
+    );
+
+    if (rowsGrup.length === 0) {
+      throw new Error("Группа не найдена: " + place);
+    }
+
+    const groupId = rowsGrup[0].id;
+
+  const [rows] = await pool.query(
+    `SELECT 
+    point_id, 
+    x,
+    y,
+    vycka, 
+    DATE_FORMAT(date, '%Y-%m-%d') AS date,
+    systemCoordinates_id, 
+    positionType_id
+     FROM ${table}
+     WHERE group_name = ?`,
+    [groupId]
   );
-  return true;
+  console.log(rows);
+  
+  return rows;
 }
-
-// 🔹 Обновить
-async function updatePoint(type, id, fields) {
-  const table = getTableName(type);
-  const keys = Object.keys(fields).map((k) => `${k}=?`).join(", ");
-  if (!keys) throw new Error("Нет данных для обновления");
-  await pool.query(`UPDATE ${table} SET ${keys} WHERE point_id=?`, [...Object.values(fields), id]);
-  return true;
-}
-
-// 🔹 Удалить
-async function deletePoint(type, id) {
-  const table = getTableName(type);
-  await pool.query(`DELETE FROM ${table} WHERE point_id=?`, [id]);
-  return true;
-}
-
 module.exports = {
   getAllPointsCombined,
   getKodLoad,
@@ -424,7 +506,6 @@ module.exports = {
   postAddDat,
   postEditDat,
   postDelatDat,
-  addPoint,
-  updatePoint,
-  deletePoint,
+  postImportPoint,
+  postExportPoint
 };

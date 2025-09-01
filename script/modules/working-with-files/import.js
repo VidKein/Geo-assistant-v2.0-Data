@@ -6,36 +6,48 @@ async function importLispPoint(e) {
     //Контроль
     //console.log(type,place);
     
-    try{
-        if (!type && !place) {
-            alert("You have not filled in all the fields or the fields were filled in incorrectly.");
-             e.preventDefault(); // Останавливаем отправку формы
-            } else {
-                const formData = new FormData();
-                //Передаем файл
-                formData.append('file', fileInputList.files[0]);   
-                //Передаем информацию о типе и типе/месте работы 
-                formData.append('type', type);
-                formData.append('place', place);
-    
-                const response = await fetch('http://localhost:4000/importLispPoint', {
-                    method: 'POST',
-                    body: formData
-                });
-                //Выводим информацию
-                const result = await response.json();
-                if (!response.ok) {
-                  alert('Error: \n' + (result.errors ? result.errors.join(', \n') : result.error));
-                } else {
-                  alert(result.message+'\nNamber import - '+result.addedPoints);
-                }
+
+    if (!type && !place) {
+        alert("You have not filled in all the fields or the fields were filled in incorrectly.");
+         e.preventDefault(); // Останавливаем отправку формы
+    } else {
+            const formData = new FormData();
+            //Передаем файл
+            formData.append('file', fileInputList.files[0]);   
+            //Передаем информацию о типе и типе/месте работы 
+            formData.append('type', type);
+            formData.append('place', place);
+        try {
+          const response = await fetch('http://localhost:4000/importLispPoint', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || data.status === false) {
+            let msg = `❌ Ошибка импорта.\n\n`;
+            if (data.error) msg += `Причина: ${data.error}\n`;
+            if (data.total !== undefined) msg += `Всего точек в файле: ${data.total}\n`;
+            if (data.added !== undefined) msg += `Добавлено: ${data.added}\n`;
+            alert(msg);
+          } else {
+            let msg = `✅ Файл успешно импортирован!\n\n`;
+            msg += `Всего точек в файле: ${data.total}\n`;
+            msg += `Добавлено: ${data.added}\n`;
+            if (data.addedPoints && data.addedPoints.length > 0) {
+              msg += `Добавленные точки: ${data.addedPoints.join(", ")}\n`;
+            }
+            alert(msg);
+
+            // Перезагрузка + блокировка кнопки
+            location.reload();
+            document.querySelector("#runImportAplikac").setAttribute('disabled', '');
+          }
+
+        } catch (err) {
+          alert("❌ Ошибка соединения с сервером!");
+          console.error(err);
         }
-
-    } catch (error) {
-        alert('Server error.');
     }
-
-    // Перезагрузка страницы
-    location.reload();
-    document.querySelector("#runImportAplikac").setAttribute('disabled', '');
 }
