@@ -22,10 +22,16 @@ async function funktionalDelatCod(e) {
         });
               const data = await response.json();
               if (response.ok) {
-                if (data.status === "success") {
+                if (data.status === "duplicate") {
+                  alert(`⚠️ Такая запись в языке ${data.lang} уже существует: ${data.value}`);
+                }else if (data.status === "success") {
                   alert(`✅ Запись добавлена! Название: ${data.eng}, ${data.ua} , ${data.cz}`);
                   // Перезагрузка страницы
                   location.reload();
+                  //Удаление блока
+                  document.querySelector(".textWindows").remove();
+                  //обнуление
+                  document.querySelector("#infoWindows").style.display = "none";
                 }
               } else {
                 alert(`❌ Ошибка: ${data.message}`);
@@ -34,9 +40,5 @@ async function funktionalDelatCod(e) {
               alert("❌ Ошибка соединения с сервером!");
               console.error(err);
             }
-            //Удаление блока
-            document.getSelection(".textWindows").remove();
-            //обнуление
-            document.querySelector("#infoWindows").style.display = "none";
     }
 }

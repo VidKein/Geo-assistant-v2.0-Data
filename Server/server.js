@@ -95,7 +95,7 @@ app.post('/editDat', async (req, res) => {
     const data = await queries.postEditDat(req.body);
     res.json(data);
   } catch (err) {
-    console.error("Ошибка в /newPlot:", err);
+    console.error("Ошибка в /editDat:", err);
     res.status(500).json({ status: "error", message: "Ошибка сервера" });
   }
 });  
@@ -107,7 +107,7 @@ app.post('/delatDat',  async (req, res) => {
     const data = await queries.postDelatDat(dataName, dataJobs, id);
     res.json(data);
   } catch (err) {
-    console.error("Ошибка в /newPlot:", err);
+    console.error("Ошибка в /delatDat:", err);
     res.status(500).json({ status: "error", message: "Ошибка сервера" });
   }
 });

@@ -35,10 +35,15 @@ async function funktionalAdd(e) {
             });
             const data = await response.json();
             if (response.ok) {
-                  if (data.status === "success") {
-                    alert(`✅ Запись с № ${data.id} добавлена в раздел ${data.groupName} тип ${data.type}`);
+                  if (data.status === "duplicate") {
+                    alert(`⚠️ Такая запись № ${data.id} сушествует в раздел ${data.groupName} тип ${data.type}.`);
+                  }else if (data.status === "success") {
+                    alert(`✅ Запись добавлена! Название: ${data.id}. Раздел ${data.groupName}. Тип ${data.type}.`);
                     // Перезагрузка страницы
                     location.reload();
+                  }
+                  if (data.status === false) {
+                    alert(`⚠️  Ошибка при добавлении точки: ${data.error}.`);
                   }
             } else {
                   alert(`❌ Ошибка: ${data.message}`);

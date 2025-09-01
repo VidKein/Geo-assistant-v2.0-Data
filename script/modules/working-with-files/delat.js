@@ -1,7 +1,7 @@
 //Функционал
 let funktionalDelatOk = document.querySelector("#funktionalDelat");
 funktionalDelatOk.addEventListener("click",funktionalDelat)
-async function funktionalDelat() {
+async function funktionalDelat(e) {
     let dataName = document.querySelector("#delateNamePoin").getAttribute('data-name');//имя тип точек Рабочии Базовые
     let dataJobs = document.querySelector("#delateNamePoin").getAttribute('data-jobs');//Тип сьемки Нив Тах
     let id = document.querySelector("#delateNamePoin").textContent;
@@ -11,19 +11,34 @@ async function funktionalDelat() {
     alert("You have not filled in all the fields or the fields were filled in incorrectly.");
     e.preventDefault(); // Останавливаем отправку формы
     } else {
-    const API_URL = `http://localhost:4000/delatDat`;
-    const response = await fetch(API_URL, {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({dataName, dataJobs, id})
-    });
-    const result = await response.json();
-    alert(result.message || result.error);    
-    // Перезагрузка страницы
-    location.reload();
-    //Удаление блока
-    document.getSelection(".textWindows").remove();
-    //обнуление
-    document.querySelector("#infoWindows").style.display = "none";
+    try {
+        const API_URL = `http://localhost:4000/delatDat`;
+        const response = await fetch(API_URL, {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({dataName, dataJobs, id})
+        });
+        const data = await response.json();
+        if (response.ok) {
+          if (data.status === false) {
+            alert(`⚠️ Ошибка при удалении точки: ${data.error}`);
+          }else if (data.status === true) {
+            alert(`✅ Точка ${id} из ${dataName} удален !`);
+            // Перезагрузка страницы
+            location.reload();
+            //Удаление блока
+            document.querySelector(".textWindows").remove();
+            //обнуление
+            document.querySelector("#infoWindows").style.display = "none";
+          }else if (data.status === "nouPoint") {
+            alert(`⚠️ Такой записи нет : ${id}`);
+          }
+        } else {
+          alert(`❌ Ошибка: ${data.message}`);
+        }
+    } catch (err) {
+      alert("❌ Ошибка соединения с сервером!");
+      console.error(err);
+    }
     }
 }

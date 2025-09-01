@@ -21,12 +21,16 @@ async function funktionalDelatCod(e) {
         });
              const data = await response.json();
              if (response.ok) {
-               if (data.status === "duplicate") {
+               if (data.status === "nouCod") {
                  alert(`⚠️ Такой записи нет : ${namePlot}`);
                }else if (data.status === "success") {
                  alert(`✅ Код ${nameCod} из ${nameTyp} удален !`);
                  // Перезагрузка страницы
                  location.reload();
+                  //Удаление блока
+                  document.querySelector(".textWindows").remove();
+                  //обнуление
+                  document.querySelector("#infoWindows").style.display = "none";
                }
              } else {
                alert(`❌ Ошибка: ${data.message}`);
@@ -35,10 +39,6 @@ async function funktionalDelatCod(e) {
            alert("❌ Ошибка соединения с сервером!");
            console.error(err);
          }
-         //Удаление блока
-         document.getSelection(".textWindows").remove();
-         //обнуление
-         document.querySelector("#infoWindows").style.display = "none";
         } 
 }    
 

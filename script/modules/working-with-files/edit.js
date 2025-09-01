@@ -25,18 +25,30 @@ async function funktionalEdit(e) {
    alert("You have not filled in all the fields or the fields were filled in incorrectly.");
     e.preventDefault(); // Останавливаем отправку формы
    } else {
+
+try {
     const API_URL = 'http://localhost:4000/editDat';
     const response = await fetch(API_URL, {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({dataName, dataJobs, id, positionX, positionY, vyckaPoint, date, coordinateSystem, positionType})
-    });
-    const result = await response.json();
-    alert(result.message || result.error);
-    // Перезагрузка страницы
-    location.reload();
-    //обнуление
-    document.querySelector("#import").style.display = "none"; 
-    add =[];
+        });
+        const data = await response.json();
+        if (response.ok) {
+          if (data.status === true){
+            alert(`✅ Информация о точке ${data.id} в ${data.groupName} тип ${data.type}`);
+            // Перезагрузка страницы
+            location.reload();
+            //обнуление
+            document.querySelector("#import").style.display = "none"; 
+            add =[];
+          }else{
+            alert(`❌ Ошибка: ${data.error}`);    
+          }
+        }
+     } catch (err) {
+       alert("❌ Ошибка соединения с сервером!");
+       console.error(err);
+     }
    }
 }

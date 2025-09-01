@@ -1,7 +1,7 @@
 //Функционал
 let funktionalDelatPlotsOk = document.querySelector("#funktionalDelatPlots");
 funktionalDelatPlotsOk.addEventListener("click",funktionalDelatPlots)
-async function funktionalDelatPlots() {
+async function funktionalDelatPlots(e) {
     let namePlot = document.querySelector("#delateNameCod").innerHTML;//name
     let nameTyp = document.querySelector("#delateNameCod").getAttribute('data-typ');//name typ
     let nameId = document.querySelector("#delateNameCod").getAttribute('data-id');//name id
@@ -20,7 +20,7 @@ async function funktionalDelatPlots() {
              });
              const data = await response.json();
              if (response.ok) {
-               if (data.status === "duplicate") {
+               if (data.status === "nouCod") {
                  alert(`⚠️ Такой записи нет : ${namePlot}`);
                }else if (data.status === "connetTabl") {
                  alert(`⚠️ Такая записи : ${namePlot} ${data.message}`);
@@ -29,6 +29,10 @@ async function funktionalDelatPlots() {
                  alert(`✅ Запись удалена! Название: ${data.id}`);
                  // Перезагрузка страницы
                  location.reload();
+                  //Удаление блока
+                  document.querySelector(".textWindows").remove();
+                  //обнуление
+                  document.querySelector("#infoWindows").style.display = "none";
                }
              } else {
                alert(`❌ Ошибка: ${data.message}`);
@@ -37,9 +41,5 @@ async function funktionalDelatPlots() {
            alert("❌ Ошибка соединения с сервером!");
            console.error(err);
          }
-         //Удаление блока
-         document.getSelection(".textWindows").remove();
-         //обнуление
-         document.querySelector("#infoWindows").style.display = "none";
         }
 }

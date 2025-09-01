@@ -25,6 +25,10 @@ async function funktionalNewPlot(e) {
               alert(`✅ Запись добавлена! Название: ${data.id}`);
               // Перезагрузка страницы
               location.reload();
+              //Удаление блока
+              document.querySelector(".textWindows").remove();
+              //обнуление
+              document.querySelector("#infoWindows").style.display = "none";
             }
           } else {
             alert(`❌ Ошибка: ${data.message}`);
@@ -33,9 +37,5 @@ async function funktionalNewPlot(e) {
           alert("❌ Ошибка соединения с сервером!");
           console.error(err);
         }
-        //Удаление блока
-        document.getSelection(".textWindows").remove();
-        //обнуление
-        document.querySelector("#infoWindows").style.display = "none";
     }
 }

@@ -103,7 +103,7 @@ async function getPointById(type, id, groupName) {
 
 //addDat
 async function postAddDat(fullInfo) {
-  console.log( fullInfo.dataJobs, fullInfo.dataName, fullInfo.id, fullInfo.positionX, fullInfo.positionY, fullInfo.vyckaPoint, fullInfo.date, fullInfo.coordinateSystem, fullInfo.positionType);
+console.log( fullInfo.dataJobs, fullInfo.dataName, fullInfo.id, fullInfo.positionX, fullInfo.positionY, fullInfo.vyckaPoint, fullInfo.date, fullInfo.coordinateSystem, fullInfo.positionType);
 let point_id = fullInfo.id, 
     groupName = fullInfo.dataJobs, 
     x = fullInfo.positionX, 
@@ -112,26 +112,34 @@ let point_id = fullInfo.id,
     date = fullInfo.date, 
     systemCoord = fullInfo.coordinateSystem, 
     posType = fullInfo.positionType;
+    const table = getTableName(fullInfo.dataName);
 try {
+  // Проверяем, есть ли уже такая запись
+     const [rows] = await pool.query(
+       `SELECT * FROM \`${table}\` WHERE point_id = ?`,
+       [point_id]
+     );
+     if (rows.length > 0) {
+       return { status: "duplicate", id: point_id , groupName: fullInfo.dataName, type: groupName  };
+     }
+
     //Получаем ID группы (ищем в base_plots и poligons_plots)
-    let [rows] = await pool.query(
+    let [rowsGrup] = await pool.query(
       `SELECT base_id as id FROM base_plots WHERE name_base = ? 
        UNION 
        SELECT poligons_id as id FROM poligons_plots WHERE name_poligons = ?`,
       [groupName, groupName]
     );
-    if (rows.length === 0) throw new Error("Группа не найдена: " + groupName);
-    const groupId = rows[0].id;
+    if (rowsGrup.length === 0) throw new Error("Группа не найдена: " + groupName);
+    const groupId = rowsGrup[0].id;
 
     //Вставляем новую точку
     const [result] = await pool.query(
-      `INSERT INTO points_Base_geo 
+      `INSERT INTO \`${table}\` 
         (point_id, group_name, x, y, vycka, date, systemCoordinates_id, positionType_id) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [point_id, groupId, x, y, vycka, date, systemCoord, posType]
     );
-
-
     return { status: "success", id: point_id , groupName: fullInfo.dataName, type: groupName };
 
   } catch (err) {
@@ -143,13 +151,70 @@ try {
 //editDat
 async function postEditDat(fullInfo) {
   console.log( fullInfo.dataJobs, fullInfo.dataName, fullInfo.id, fullInfo.positionX, fullInfo.positionY, fullInfo.vyckaPoint, fullInfo.date, fullInfo.coordinateSystem, fullInfo.positionType);
+  let point_id = fullInfo.id, 
+  groupName = fullInfo.dataJobs, 
+  x = fullInfo.positionX, 
+  y = fullInfo.positionY,
+  vycka = fullInfo.vyckaPoint, 
+  date = fullInfo.date, 
+  systemCoord = fullInfo.coordinateSystem, 
+  posType = fullInfo.positionType;
+  const table = getTableName(fullInfo.dataName);
+  try {
+    //Получаем ID группы (ищем в base_plots и poligons_plots)
+    let [rowsGrup] = await pool.query(
+      `SELECT base_id as id FROM base_plots WHERE name_base = ? 
+       UNION 
+       SELECT poligons_id as id FROM poligons_plots WHERE name_poligons = ?`,
+      [groupName, groupName]
+    );
+    if (rowsGrup.length === 0) throw new Error("Группа не найдена: " + groupName);
+    const groupId = rowsGrup[0].id;
+
+    //Вставляем новую точку
+    const [result] = await pool.query(
+      `UPDATE \`${table}\` 
+       SET
+        group_name = ?, 
+        x = ?, 
+        y = ?, 
+        vycka = ?, 
+        date = ?, 
+        systemCoordinates_id = ?, 
+        positionType_id  = ?
+       WHERE point_id = ?`,
+      [groupId, x, y, vycka, date, systemCoord, posType, point_id]
+    );
+    return { status: true, id: point_id , groupName: fullInfo.dataName, type: groupName };
+
+  } catch (err) {
+    console.error("Ошибка при добавлении точки:", err.message);
+    return { success: false, error: err.message };
+  }
 
 }
 
 //delatDat
 async function postDelatDat(dataName, dataJobs, id) {
   console.log(dataName, dataJobs, id);
-  
+  try {
+   const table = getTableName(dataName);
+   // Проверяем на наличие записи БД
+   const [rows] = await pool.query(
+     `SELECT * FROM \`${table}\` WHERE point_id = ?`,
+     [id]
+   );
+   if (rows.length === 0) {return { status: "nouPoint" };} 
+   //Удаляем точку
+   const [result] = await pool.query(
+      `DELETE FROM \`${table}\` WHERE point_id = ?`,
+      [id]
+    );
+    return { status: true};
+  } catch (err) {
+    console.error("Ошибка при удалении точки:", err.message);
+    return { status: false, error: err.message };
+  }
 }
 
 
@@ -224,7 +289,7 @@ async function postDelatPlot(namePlot, nameTyp, nameId) {
       [namePlot]
     );
     if (rows.length === 0) {
-      return { status: "duplicate" };
+      return { status: "nouPlot" };
     }
     // Проверяем на наличие записи в ВАЖНЫХ таблицах с инфо по точкам
     const [rowsPoint] = await pool.query(
@@ -256,19 +321,38 @@ async function postNewCod(eng, ua, cz, nameTyp, siteLanguage) {
   const type = getIdType(nameTyp); // получаем id типа
   console.log(eng, ua, cz, type, siteLanguage);
   
-  // 1. Создаём запись в codes
-  const [codeResult] = await pool.query(
-    `INSERT INTO codes (code_type_id) VALUES (?)`,
-    [type]
-  );
-  const codeId = codeResult.insertId;
+//Создаём запись в codes
+const [codeResult] = await pool.query(
+  `INSERT INTO codes (code_type_id) VALUES (?)`,
+  [type]
+);
+const codeId = codeResult.insertId;
 
-  // 2. Переводы (одним INSERT с несколькими VALUES)
-  const [result] = await pool.query(
-    `INSERT INTO code_translations (code_id, lang, value) 
-     VALUES (?, 'eng', ?), (?, 'cz', ?), (?, 'ua', ?)`,
-    [codeId, eng, codeId, cz, codeId, ua]
-  );
+let value;
+if (siteLanguage == "eng") {
+  value = eng;
+}
+if (siteLanguage == "ua") {
+  value = ua;
+}
+if (siteLanguage == "cz") {
+  value = cz;
+}
+//Проверяем, есть ли уже такая запись
+const [rows] = await pool.query(
+    `SELECT id FROM code_translations WHERE lang = ? AND value = ?`,
+    [siteLanguage, value]
+);
+if (rows.length > 0) {
+  return { status: "duplicate", lang: siteLanguage, value: value  };
+}
+
+//Переводы (одним INSERT с несколькими VALUES)
+const [result] = await pool.query(
+  `INSERT INTO code_translations (code_id, lang, value) 
+   VALUES (?, 'eng', ?), (?, 'cz', ?), (?, 'ua', ?)`,
+  [codeId, eng, codeId, cz, codeId, ua]
+);
 
   return { status: "success", eng: eng, ua: ua , cz: cz };
 }
@@ -281,9 +365,7 @@ async function postDelatCod(idCod, nameCod, nameTyp) {
       `SELECT * FROM code_translations WHERE code_id = ?`,
       [idCod]
     );
-    if (rows.length === 0) {
-      return { status: "duplicate" };
-    }
+    if (rows.length === 0) {return { status: "nouCod" };}
 
   // Удаляем переводы
   await pool.query(
