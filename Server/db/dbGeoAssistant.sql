@@ -12,7 +12,7 @@ CREATE TABLE `users_geo` (
   email_username VARCHAR(255) NOT NULL,
   password_username VARCHAR(255) NOT NULL
 );
-INSERT INTO users_geo (username, email_username, password_username) VALUES ('admin', 'a5b4bfe7a087861bd36f51452d11fddb313918dc4c98125b78931bdb7053201c', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f');
+INSERT INTO users_geo (username, email_username, password_username) VALUES ('admin', 'vidkein75@gmail.com', '$2b$10$tNY5gR2C27nrWRIfbmkkBOgQWqCYmfCiSBtdpHWhOkE65ANhFcI6m');
 -- --------------------------------------------------------
 --
 -- Структура таблицы храняшие названия участков

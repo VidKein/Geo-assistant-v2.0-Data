@@ -1,5 +1,12 @@
 const pool = require("./connection");
 
+/*Регистрация*/
+async function postLoginGeo(email) {
+  //console.log(email);
+  //выбираем по эмайлу
+  const [rows] = await pool.query('SELECT * FROM users_geo WHERE email_username = ?', [email]);
+  return rows;
+}
 /*ТОЧКИ*/
 //Вспомогательная функция выбора таблицы BASE/POLIGONS
 function getTableName(type) {
@@ -70,7 +77,7 @@ async function getPointById(type, id, groupName) {
   
   // Определяем, это Base или Poligons
   let groupTable, groupField, joinField, idField;
-  if (["niv", "trig"].includes(groupName)) {
+  if (type === "Base") {
     groupTable = "base_plots";
     groupField = "name_base";    // текстовое название группы
     joinField = "b";             // алиас таблицы
@@ -496,6 +503,7 @@ async function postExportPoint(type, place) {
   return rows;
 }
 module.exports = {
+  postLoginGeo,
   getAllPointsCombined,
   getKodLoad,
   getPointById,

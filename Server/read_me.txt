@@ -7,5 +7,8 @@ db
 npm install mysql2
 env
 npm install dotenv
+Encryption
+npm install bcrypt
+
 - Запуск модуля
 node server.js

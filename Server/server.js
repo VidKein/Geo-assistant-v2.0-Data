@@ -14,7 +14,31 @@ app.use(cors()); // Разрешаем CORS для всех источников
 //Отдаём фронтенд (папку public)
 app.use(express.static("public"));
 
-/*Подгрузка Календаря */
+/*Регистрация*/
+//Модули шифрование 
+const bcrypt = require('bcrypt');
+app.post('/loginGeo', async (req, res) => {
+    const {email, password} = req.body;
+    try{
+        const rows = await queries.postLoginGeo(email);
+
+        if (rows && rows.length > 0) {
+            const user = rows[0]; // берём первого пользователя
+            const valid = await bcrypt.compare(password, user.password_username);
+            if (valid) {
+                return res.json({ message: true });
+            } else {
+                return res.json({ message: false , errorScanBD: "pass"});
+            }
+        } else {
+            return res.json({ message: false, errorScanBD: "email" });
+        }
+    } catch (err) {
+    console.error("Ошибка в /loginGeo:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+    }
+});
+/*Подгрузка Календаря*/
 // Путь к файлу
 const UPLOAD_FOLDER = path.join(__dirname, '..','xlsx')
 // Загрузка файла
