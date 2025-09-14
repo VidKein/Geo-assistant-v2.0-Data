@@ -549,6 +549,7 @@ async function loadCodesOptions(jsonData, nameLoad) {
                 const loadOption = document.createElement('div');
                 loadOption.className = nameLoad; // Добавляем класс
                 loadOption.textContent = item.name; // Устанавливаем текст внутри div
+                loadOption.title =item.name;
                 let delatCode = document.createElement('div');
                 delatCode.className = 'delatCode'+nameLoad;
                 delatCode.setAttribute("title", "Delat code");
@@ -579,6 +580,7 @@ async function loadPlotsOptions(typeJobs, nameLoad){
             const loadOption = document.createElement('div');
             loadOption.className = nameLoad; // Добавляем класс
             loadOption.textContent = item.name; // Устанавливаем текст внутри div
+            loadOption.title =item.name;
             let delatCode = document.createElement('div');
             delatCode.className = 'delat'+nameLoad;
             delatCode.setAttribute("title", "Delat "+nameLoad);
