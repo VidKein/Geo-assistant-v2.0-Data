@@ -12,7 +12,7 @@ async function funktionalDelatPlots(e) {
         e.preventDefault(); // Останавливаем отправку формы
         } else {
         try {
-             const API_URL = `http://localhost:4000/delatPlot`;
+             const API_URL = `/delatPlot`;
              const response = await fetch(API_URL, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

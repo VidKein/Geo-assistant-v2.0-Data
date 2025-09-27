@@ -14,7 +14,7 @@ async function funktionalDelatCod(e) {
         e.preventDefault(); // Останавливаем отправку формы
     } else {
      try {
-        const API_URL = `http://localhost:4000/newCod`;
+        const API_URL = `/newCod`;
         const response = await fetch(API_URL, {
              method: 'POST',
              headers: { 'Content-Type': 'application/json' },

@@ -10,7 +10,7 @@ async function importLispPoint(e) {
         if (!type || !place || !tapeFain) {
         e.preventDefault(); // Останавливаем отправку формы
         }else{
-        const API_URL = 'http://localhost:4000/exportLispPoint';
+        const API_URL = '/exportLispPoint';
         const response = await fetch(API_URL, {
              method: 'POST',
              headers: { 'Content-Type': 'application/json' },

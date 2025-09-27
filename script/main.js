@@ -4,7 +4,7 @@ const namePointDisplay = localStorage.getItem('namePointDisplay') || "false";
 const siteLanguage = localStorage.getItem('siteLanguage') || "eng";
 //Загрузка данных о коде вида точек и системы координат из БД 
 async function loadDataKod() {
-  const API_URL = `http://localhost:4000/kod?lang=${siteLanguage}`;
+  const API_URL = `/kod?lang=${siteLanguage}`;
   const res = await fetch(API_URL);
   const data = await res.json();
   window.pointsData = data;  //кладём глобально

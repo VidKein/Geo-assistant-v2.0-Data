@@ -2,7 +2,7 @@
 const siteLanguage = localStorage.getItem('siteLanguage') || "eng";
 //Загрузка данных о точках из БД 
 async function loadDataAllPoind() {
-  const API_URL = `http://localhost:4000/all_points?lang=${siteLanguage}`;
+  const API_URL = `/all_points?lang=${siteLanguage}`;
   const res = await fetch(API_URL);
   const data = await res.json();
   return data;

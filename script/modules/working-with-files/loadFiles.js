@@ -4,7 +4,7 @@ async function loadFiles() {
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
 
-    const response = await fetch('http://localhost:4000/uploadFile', {
+    const response = await fetch('/uploadFile', {
         method: 'POST',
         body: formData
     });

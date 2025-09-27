@@ -13,7 +13,7 @@ async function login() {
 
   if (email !== '' && password !== '') {
     try{
-      const API_URL = 'http://localhost:4000/loginGeo';
+      const API_URL = '/loginGeo';
       const response = await fetch(API_URL, {
            method: 'POST',
            headers: { 'Content-Type': 'application/json' },

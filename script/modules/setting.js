@@ -241,7 +241,7 @@ for (let i = 0; i < settingBlock.length; i++) {
                                                 }
                                             }
                                     }   
-                                     const API_URL = `http://localhost:4000/pointDat/${dataName}/${dataJobsPlase}/${id}`;
+                                     const API_URL = `/pointDat/${dataName}/${dataJobsPlase}/${id}`;
                                      const response = await fetch(API_URL);
                                      const data = await response.json();
                                      if (response.ok==true) {

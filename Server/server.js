@@ -8,6 +8,9 @@ const multer = require('multer');//Модуль для загрузки файл
 
 const app = express();
 const PORT = process.env.PORT || 4000; // Используется переменная окружения или 4000 по умолчанию
+const HOST = "127.0.0.1";
+// Раздаём все статики (css, js, index.html и т.д.)
+app.use(express.static(path.join(__dirname, "..")));
 app.use(express.json());
 app.use(cors()); // Разрешаем CORS для всех источников
 
@@ -275,6 +278,6 @@ app.post('/exportLispPoint', async (req, res) => {
 });
 
 // Запуск сервера
-app.listen(PORT, () => {
-    console.log(`Сервер запущен: http://localhost:${PORT}`);
+app.listen(PORT, HOST,() => {
+    console.log(`Сервер запущен: https://${HOST}:${PORT}`);
 });

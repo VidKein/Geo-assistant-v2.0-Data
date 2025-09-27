@@ -11,7 +11,7 @@ async function funktionalNewPlot(e) {
         e.preventDefault(); // Останавливаем отправку формы
     } else {
         try {
-          const API_URL = `http://localhost:4000/newPlot`;
+          const API_URL = `/newPlot`;
           const response = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

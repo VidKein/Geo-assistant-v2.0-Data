@@ -18,7 +18,7 @@ async function importLispPoint(e) {
             formData.append('type', type);
             formData.append('place', place);
         try {
-          const response = await fetch('http://localhost:4000/importLispPoint', {
+          const response = await fetch('/importLispPoint', {
             method: 'POST',
             body: formData
           });

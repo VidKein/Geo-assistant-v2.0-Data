@@ -27,7 +27,7 @@ async function funktionalEdit(e) {
    } else {
 
 try {
-    const API_URL = 'http://localhost:4000/editDat';
+    const API_URL = '/editDat';
     const response = await fetch(API_URL, {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
