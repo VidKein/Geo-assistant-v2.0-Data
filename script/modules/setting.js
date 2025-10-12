@@ -214,7 +214,7 @@ for (let i = 0; i < settingBlock.length; i++) {
             let plasePoint = document.querySelector(".plasePoint");
             //Edit
             if (e.target.id == "runPointEdit") {
-                    if (Number(namePointAddEditDelat)) {
+                    if (namePointAddEditDelat) {
                         //Запoлняем дополнительную информацию по точкам
                         //Создаем новые атрибуты
                         let type = document.querySelector("#firstSelectPoint");
